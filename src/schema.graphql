@@ -1,0 +1,44 @@
+# Define custom scalar types if needed
+scalar Date
+
+# Define types
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  createdAt: Date!
+  posts: [Post!]!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  author: User!
+  createdAt: Date!
+}
+
+# Define input types for mutations
+input CreateUserInput {
+  username: String!
+  email: String!
+}
+
+input CreatePostInput {
+  title: String!
+  content: String!
+  authorId: ID!
+}
+
+# Define query type
+type Query {
+  getUser(id: ID!): User
+  getPost(id: ID!): Post
+  getAllPosts: [Post!]!
+}
+
+# Define mutation type
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  createPost(input: CreatePostInput!): Post!
+}

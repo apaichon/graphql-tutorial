@@ -1,4 +1,4 @@
-# Get Start
+# Lab1: Get Start
 1. Clone project from https://github.com/apaichon/graphql-tutorial
 ```sh
 git clone https://github.com/apaichon/graphql-tutorial
