@@ -1,5 +1,8 @@
 # Get Start
 1. Clone project from https://github.com/apaichon/graphql-tutorial
+```sh
+git clone https://github.com/apaichon/graphql-tutorial
+```
 2. Install GraphQL Libraries.
 ```sh
 # Command line
