@@ -1,0 +1,10 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "event_db",
+            "database": "${workspaceFolder:graphql-tutorial}/data/event.db"
+        }
+    ]
+}
