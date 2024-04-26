@@ -1,0 +1,25 @@
+package queries
+
+import (
+
+	"github.com/graphql-go/graphql"
+	"graphql-api/pkg/graphql/resolvers"
+	gql "graphql-api/pkg/graphql"
+)
+
+// Define the TicketQueries type
+var TicketQueriesType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "TicketQueries",
+	Fields: graphql.Fields{
+		"gets": &graphql.Field{
+			Type:    graphql.NewList(gql.TicketGraphQLType),
+			Args:    gql.SearhTextQueryArgument,
+			Resolve: resolvers.GetTicketsResolve,
+		},
+		"getById": &graphql.Field{
+			Type:    gql.TicketGraphQLType,
+			Args:    gql.IdArgument,
+			Resolve: resolvers.GetTicketByIdResolve,
+		},
+	},
+})

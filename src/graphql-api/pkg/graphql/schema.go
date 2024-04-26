@@ -22,6 +22,25 @@ var RootQuery = graphql.NewObject(
 					return &ImageQueries{}, nil
 				},
 			},
+			"events": &graphql.Field{
+				Type: EventQueriesType,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					return &EventQueries{}, nil
+				},
+			},
+			"tickets": &graphql.Field{
+				Type: TicketQueriesType,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					return &TicketQueries{}, nil
+				},
+			},
+			
+			"ticketEvents": &graphql.Field{
+				Type: TicketEventsQueriesType,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					return &TicketEventQueries{}, nil
+				},
+			},
 			// Add other queries as needed
 		},
 	},

@@ -1,0 +1,26 @@
+package queries
+
+import (
+	"github.com/graphql-go/graphql"
+	"graphql-api/pkg/graphql/resolvers"
+	gql "graphql-api/pkg/graphql"
+)
+
+
+
+// Define the ContactQueries type
+var ContactQueriesType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "ContactQueries",
+	Fields: graphql.Fields{
+		"gets": &graphql.Field{
+			Type:    graphql.NewList(gql.ContactGraphQLType),
+			Args:    gql.SearhTextQueryArgument,
+			Resolve: resolvers.GetContactResolve,
+		},
+		"getPagination": &graphql.Field{
+			Type:    gql.ContactPaginationGraphQLType,
+			Args:    gql.SearhTextPaginationQueryArgument,
+			Resolve: resolvers.GetContactsPaginationResolve,
+		},
+	},
+})

@@ -120,6 +120,7 @@ erDiagram
        int ticket_id PK
        enum type
        decimal price
+	   int event_id
    }
    marketing {
        int marketing_id PK

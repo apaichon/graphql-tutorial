@@ -63,6 +63,63 @@ func (cr *ContactRepo) GetContactsBySearchText(searchText string, limit, offset 
 	return contacts, nil
 }
 
+
+// Get Contacts fetches contacts from the database with support for text search, limit, and offset
+func (cr *ContactRepo) GetContactsBySearchTextPagination(searchText string, page, pageSize int) ([]*models.ContactModel, *models.PaginationModel, error) {
+	var contacts []*models.ContactModel
+
+	query := fmt.Sprintf(`
+            SELECT * FROM contact
+             Where name like '%%%s%%' OR first_name like '%%%s%%' OR last_name like '%%%s%%' OR email like '%%%s%%' OR phone like '%%%s%%' OR address like '%%%s%%' OR photo_path like '%%%s%%'
+        `, searchText, searchText, searchText, searchText, searchText, searchText, searchText)
+	offset := (page - 1) * pageSize
+	limit := pageSize
+
+	pagination := data.NewPagination(page, pageSize, query, limit, offset)
+
+    pager, err := pagination.GetPageData(cr.DB)
+    if err != nil {
+        return nil, nil, err
+    }
+	
+	query = query + " LIMIT ? OFFSET ?"
+	
+	rows, err := cr.DB.Query(query, limit, offset)
+	if err != nil {
+		return nil,nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var contact models.ContactModel
+		err := rows.Scan(
+			&contact.ContactId,
+			&contact.Name,
+			&contact.FirstName,
+			&contact.LastName,
+			&contact.GenderId,
+			&contact.Dob,
+			&contact.Email,
+			&contact.Phone,
+			&contact.Address,
+			&contact.PhotoPath,
+			&contact.CreatedAt,
+			&contact.CreatedBy,
+		)
+		if err != nil {
+			return nil,nil, err
+		}
+		contacts = append(contacts, &contact)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil,nil, err
+	}
+
+
+	return contacts, pager, nil
+}
+
 // Get ContactByID retrieves a contact by its ID from the database
 func (cr *ContactRepo) GetContactByID(id int) (*models.ContactModel, error) {
 	var contact models.ContactModel

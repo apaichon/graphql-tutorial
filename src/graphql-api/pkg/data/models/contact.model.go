@@ -19,3 +19,8 @@ type ContactModel struct {
 	CreatedAt time.Time `json:"created_at"`
 	CreatedBy string `json:"created_by"`
 }
+
+type ContactPaginationModel struct {
+	Contacts []*ContactModel `json:"contacts"`
+	Pagination *PaginationModel `json:"pagination"`
+}
