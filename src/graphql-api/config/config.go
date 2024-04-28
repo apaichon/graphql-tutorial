@@ -18,6 +18,7 @@ type Config struct {
 	DBName string
     SecretKey string
     TokenAge int
+    GraphQLPort int
 }
 
 var instance *Config
@@ -57,6 +58,17 @@ func NewConfig() *Config {
             return
         }
         instance.TokenAge = tokenAge
+
+         // Parse DB port as integer
+         graphQlPortStr := os.Getenv("GRAPHQL_PORT")
+         if graphQlPortStr != "" {
+             graphQLPort, err := strconv.Atoi(graphQlPortStr)
+             if err != nil {
+                 fmt.Println("Invalid GRAPHQL_PORT value:", err)
+                 return
+             }
+             instance.GraphQLPort = graphQLPort
+         }
     })
     return instance
 }

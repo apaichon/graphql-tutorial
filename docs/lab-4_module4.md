@@ -1,4 +1,5 @@
-# Lab3 - Module 4: Query
+# Module 4: Query
+## Lab4.1 - Query Contact 
 ## Prepare Database and sampling data.
 1. Prepare sqlite database and table.
 - Create file "event.db" on folder "data".

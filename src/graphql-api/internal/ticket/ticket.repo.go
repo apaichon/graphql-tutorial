@@ -113,8 +113,6 @@ func (cr *TicketRepo) GetTicketEventsBySearchText(searchText string, limit, offs
 	return ticketEvents, nil
 }
 
-// ดร สุวิทย์
-
 // Get TicketByID retrieves a ticket by its ID from the database
 func (cr *TicketRepo) GetTicketByID(id int) (*models.TicketModel, error) {
 	var ticket models.TicketModel

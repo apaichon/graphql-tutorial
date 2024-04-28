@@ -33,10 +33,5 @@ func RandomImageUrl(h, w int) (string, error) {
 	}
 
 	image_url := fmt.Sprintf("%s",resp.Request.URL)
-	// Read the response body
-	// body, err := io.ReadAll(resp.Body)
-
 	return image_url, err
 }
-
-//https://random.imagecdn.app/500/150

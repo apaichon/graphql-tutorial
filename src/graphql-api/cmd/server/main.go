@@ -10,14 +10,12 @@ import (
 	gql "graphql-api/pkg/graphql"
 )
 
+
 func main() {
 
 	// Load configuration
 	config := config.NewConfig()
-
-	// Print configuration
-	fmt.Println("DB Name:", config.DBName)
-
+	
 	rootQuery := gql.RootQuery // Assuming you have a root query defined in schema.go
 	schema, err := graphql.NewSchema(graphql.SchemaConfig{
 		Query: rootQuery,
@@ -37,7 +35,7 @@ func main() {
 	http.Handle("/graphql", graphqlHandler)
 
 	// Start the HTTP server
-	fmt.Println("Server is running at http://localhost:4000/graphql")
-	http.ListenAndServe(":4000", nil)
+	fmt.Printf(`Server is running at http://localhost:%v/graphql`, config.GraphQLPort)
+	http.ListenAndServe(fmt.Sprintf( `:%v`,config.GraphQLPort), nil)
 
 }
