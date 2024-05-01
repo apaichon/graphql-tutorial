@@ -1,9 +1,10 @@
 package graphql
 
 import (
-	"github.com/graphql-go/graphql"
 	"graphql-api/pkg/data/models"
 	"graphql-api/pkg/graphql/resolvers"
+
+	"github.com/graphql-go/graphql"
 )
 
 /*
@@ -58,10 +59,59 @@ var ContactQueriesType = graphql.NewObject(graphql.ObjectConfig{
 			Args:    SearhTextPaginationQueryArgument,
 			Resolve: resolvers.GetContactsPaginationResolve,
 		},
+		"getById": &graphql.Field{
+			Type:    ContactGraphQLType,
+			Args:    IdArgument,
+			Resolve: resolvers.GetContactByIdResolve,
+		},
 
 	},
 })
 
+type ContactMutations struct {
+	CreateContact func(map[string]interface{}) (*models.ContactModel, error) `json:"createContact"`
+	CreateContacts func(map[string]interface{}) ([]*models.ContactModel, error) `json:"createContacts"`
+	UpdateContact func(map[string]interface{}) (*models.ContactModel, error) `json:"updateContact"`	
+	DeleteContact func(int) (int, error) `json:"deleteContact"`	
+}
+
+var StatusGraphQLType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Status",
+	Fields: graphql.Fields{
+		"status_id": &graphql.Field{Type: graphql.Int},
+		"status": &graphql.Field{Type: graphql.String},
+		"message": &graphql.Field{Type: graphql.String},
+		// Add field here
+	},
+})
+
+
+// Define the ContactMutations type
+var ContactMutationsType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "ContactMutations",
+	Fields: graphql.Fields{
+		"createContact": &graphql.Field{
+			Type:    ContactGraphQLType,
+			Args:    CreateContactArgument,
+			Resolve: resolvers.CretateContactResolve,
+		},
+		"createContacts": &graphql.Field{
+			Type:    StatusGraphQLType,
+			Args:    CreateContactsArgument,
+			Resolve: resolvers.CretateContactsResolve,
+		},
+		"updateContact": &graphql.Field{
+			Type:    ContactGraphQLType,
+			Args:    UpdateContactArgument,
+			Resolve: resolvers.UpdateContactResolve,
+		},
+		"deleteContact": &graphql.Field{
+			Type:    ContactGraphQLType,
+			Args:    IdArgument,
+			Resolve: resolvers.DeleteContactResolve,
+		},
+	},
+})
 
 /*
 Image Type

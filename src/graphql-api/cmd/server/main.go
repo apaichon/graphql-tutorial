@@ -16,9 +16,9 @@ func main() {
 	// Load configuration
 	config := config.NewConfig()
 	
-	rootQuery := gql.RootQuery // Assuming you have a root query defined in schema.go
 	schema, err := graphql.NewSchema(graphql.SchemaConfig{
-		Query: rootQuery,
+		Query: gql.RootQuery,
+		Mutation: gql.RootMutation,
 	})
 	if err != nil {
 		panic(err)

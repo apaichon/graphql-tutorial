@@ -2,6 +2,7 @@ package contact
 
 import (
 	"fmt"
+	"strings"
 	"graphql-api/pkg/data"
 	"graphql-api/pkg/data/models"
 	_ "github.com/mattn/go-sqlite3"
@@ -152,13 +153,89 @@ func (cr *ContactRepo) GetContactByID(id int) (*models.ContactModel, error) {
 // Insert Contact inserts a new contact into the database
 func (cr *ContactRepo) InsertContact(contact *models.ContactModel) (int64, error) {
 	// Execute insert query to insert a new contact into the database
-	result, err := cr.DB.Insert("INSERT INTO contact (contact_id,name,first_name,last_name,gender_id,dob,email,phone,address,photo_path) VALUES ({?,?,?,?,?,?,?,?,?,?})",
-		contact.ContactId, contact.Name, contact.FirstName, contact.LastName, contact.GenderId, contact.Dob, contact.Email, contact.Phone, contact.Address, contact.PhotoPath)
+	result, err := cr.DB.Insert("INSERT INTO contact (name,first_name,last_name,gender_id,dob,email,phone,address,photo_path,created_at,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+		 contact.Name, contact.FirstName, contact.LastName, contact.GenderId, contact.Dob, contact.Email, contact.Phone, contact.Address, contact.PhotoPath, contact.CreatedAt, contact.CreatedBy)
 	if err != nil {
 		return 0, err
 	}
 	return result.LastInsertId()
 }
+
+func (cr *ContactRepo) InsertContacts(contacts []*models.ContactModel) ( int64, error) {
+  
+	// Step 1: Query the count of records before insertion
+    var countBefore int64
+    row,err := cr.DB.QueryRow("SELECT COUNT(*) FROM contact")
+	
+    if err != nil {
+        return 0, fmt.Errorf("failed to query count before insertion: %v", err)
+    }
+	row.Scan(&countBefore)
+
+    // Begin a transaction by starting a deferred transaction
+    _, err = cr.DB.Exec("BEGIN TRANSACTION")
+    if err != nil {
+        return 0, err
+    }
+    defer func() {
+        // Rollback the transaction if there's an error and it hasn't been committed
+        if err != nil {
+            _, rollbackErr := cr.DB.Exec("ROLLBACK")
+            if rollbackErr != nil {
+                err = fmt.Errorf("rollback failed: %v, original error: %v", rollbackErr, err)
+            }
+            return
+        }
+        // Commit the transaction if no error occurred
+        _, commitErr := cr.DB.Exec("COMMIT")
+        if commitErr != nil {
+            err = fmt.Errorf("commit failed: %v", commitErr)
+        }
+    }()
+
+    // Prepare the SQL statement for batch insertion
+    stmt, err := cr.DB.Prepare("INSERT INTO contact (name, first_name, last_name, gender_id, dob, email, phone, address, photo_path, created_at, created_by) VALUES " + placeholders(len(contacts)))
+    if err != nil {
+        return 0, err
+    }
+    defer stmt.Close()
+
+    // Prepare the slice to hold the arguments for the prepared statement
+    args := make([]interface{}, 0, len(contacts)*11)
+
+    // Flatten the contacts into a single slice of values
+    for _, contact := range contacts {
+        args = append(args, contact.Name, contact.FirstName, contact.LastName, contact.GenderId, contact.Dob, contact.Email, contact.Phone, contact.Address, contact.PhotoPath, contact.CreatedAt, contact.CreatedBy)
+    }
+
+    // Execute the prepared statement with the concatenated values
+    _, err = stmt.Exec(args...)
+    if err != nil {
+        return 0, err
+    }
+
+    var countAfter int64
+    row, err = cr.DB.QueryRow("SELECT COUNT(*) FROM contact")
+	row.Scan(&countAfter)
+    if err != nil {
+        return 0, fmt.Errorf("failed to query count after insertion: %v", err)
+    }
+	if countAfter != (countBefore + int64(len(contacts))) {
+		return 0, fmt.Errorf("insert batch is not completed: %v", err)
+	}
+
+    return  countAfter, nil
+}
+
+// placeholders returns a string with n question marks separated by commas, for use in a SQL statement.
+func placeholders(n int) string {
+    if n <= 0 {
+        return ""
+    }
+    return strings.Repeat("(?,?,?,?,?,?,?,?,?,?,?),", n-1) + "(?,?,?,?,?,?,?,?,?,?,?)"
+}
+
+
 
 // Update Contact updates an existing contact in the database
 func (cr *ContactRepo) UpdateContact(contact *models.ContactModel) (int64, error) {

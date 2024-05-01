@@ -115,3 +115,27 @@ func (db *DB) Update(query string, args ...interface{}) (sql.Result, error) {
 
     return result, nil
 }
+
+func (db *DB) Begin() (*sql.Tx, error) {
+    tx, err := db.Connection.Begin()
+    if err != nil {
+        return nil, fmt.Errorf("failed to begin transaction: %v", err)
+    }
+    return tx, nil
+}
+
+func (db *DB) Prepare(query string) (*sql.Stmt, error) {
+    stmt, err := db.Connection.Prepare(query)
+    if err != nil {
+        return nil, fmt.Errorf("failed to prepare statement: %v", err)
+    }
+    return stmt, nil
+}
+
+func (db *DB) Exec(query string, args ...interface{}) (sql.Result, error) {
+    result, err := db.Connection.Exec(query, args...)
+    if err != nil {
+        return nil, fmt.Errorf("failed to execute statement: %v", err)
+    }
+    return result, nil
+}

@@ -10,7 +10,7 @@ type ContactModel struct {
 	Name string `json:"name"`
 	FirstName string `json:"first_name"`
 	LastName string `json:"last_name"`
-	GenderId int64 `json:"gender_id"`
+	GenderId int `json:"gender_id"`
 	Dob time.Time `json:"dob"`
 	Email string `json:"email"`
 	Phone string `json:"phone"`
