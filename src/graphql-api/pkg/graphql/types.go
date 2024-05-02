@@ -71,8 +71,8 @@ var ContactQueriesType = graphql.NewObject(graphql.ObjectConfig{
 type ContactMutations struct {
 	CreateContact func(map[string]interface{}) (*models.ContactModel, error) `json:"createContact"`
 	CreateContacts func(map[string]interface{}) ([]*models.ContactModel, error) `json:"createContacts"`
-	UpdateContact func(map[string]interface{}) (*models.ContactModel, error) `json:"updateContact"`	
-	DeleteContact func(int) (int, error) `json:"deleteContact"`	
+	UpdateContact func(map[string]interface{}) (*models.Status, error) `json:"updateContact"`	
+	DeleteContact func(int) (*models.Status, error) `json:"deleteContact"`	
 }
 
 var StatusGraphQLType = graphql.NewObject(graphql.ObjectConfig{
@@ -98,7 +98,7 @@ var ContactMutationsType = graphql.NewObject(graphql.ObjectConfig{
 		"createContacts": &graphql.Field{
 			Type:    StatusGraphQLType,
 			Args:    CreateContactsArgument,
-			Resolve: resolvers.CretateContactsResolve,
+			Resolve: resolvers.CreateContactsResolve,
 		},
 		"updateContact": &graphql.Field{
 			Type:    ContactGraphQLType,
@@ -106,7 +106,7 @@ var ContactMutationsType = graphql.NewObject(graphql.ObjectConfig{
 			Resolve: resolvers.UpdateContactResolve,
 		},
 		"deleteContact": &graphql.Field{
-			Type:    ContactGraphQLType,
+			Type:    StatusGraphQLType,
 			Args:    IdArgument,
 			Resolve: resolvers.DeleteContactResolve,
 		},

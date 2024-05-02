@@ -61,7 +61,7 @@ func CretateContactResolve(params graphql.ResolveParams) (interface{}, error) {
 	return contactInput, nil
 }
 
-func CretateContactsResolve(params graphql.ResolveParams) (interface{}, error) {
+func CreateContactsResolve(params graphql.ResolveParams) (interface{}, error) {
 	// Map input fields to Contact struct
 	contactsArg, ok := params.Args["contacts"].([]interface{})
 	if !ok {
@@ -213,16 +213,20 @@ func UpdateContactResolve(params graphql.ResolveParams) (interface{}, error) {
 }
 
 func DeleteContactResolve(params graphql.ResolveParams) (interface{}, error) {
-	// Map input fields to Contact struct
-	contact_id := params.Args["contact_id"].(int)
+	contact_id := params.Args["id"].(int)
 
 	contactRepo := contact.NewContactRepo()
 
-	// Insert Contact to the database
-	id, err := contactRepo.DeleteContact(contact_id)
+	// Delete Contact to the database
+	_, err := contactRepo.DeleteContact(contact_id)
 	if err != nil {
 		return nil, err
 	}
+	result:= models.Status {
+		StatusID: 200,
+		StatusText: "OK",
+		Message: fmt.Sprintf("Delete id:%v successfully.", contact_id),
+	}
 
-	return id, nil
+	return result, nil
 }
