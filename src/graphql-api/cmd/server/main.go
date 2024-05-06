@@ -8,6 +8,8 @@ import (
 	"github.com/graphql-go/handler"
 	"graphql-api/config"
 	gql "graphql-api/pkg/graphql"
+	"graphql-api/internal/auth"
+
 )
 
 
@@ -32,7 +34,8 @@ func main() {
 	})
 
 	// Serve GraphQL API at /graphql endpoint
-	http.Handle("/graphql", graphqlHandler)
+	http.Handle("/graphql", auth.AuthenticationHandler( graphqlHandler))
+	http.HandleFunc("/login", auth.LoginHandler)
 
 	// Start the HTTP server
 	fmt.Printf(`Server is running at http://localhost:%v/graphql`, config.GraphQLPort)

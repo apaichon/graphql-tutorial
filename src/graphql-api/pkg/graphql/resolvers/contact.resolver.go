@@ -123,7 +123,7 @@ func GetContactResolve(params graphql.ResolveParams) (interface{}, error) {
 	if !ok {
 		searchText = ""
 	}
-	contactRepo := contact.NewContactComplexRepo()
+	contactRepo := contact.NewContactRepo()
 
 	// Fetch contacts from the database
 	contacts, err := contactRepo.GetContactsBySearchText(searchText, limit, offset)

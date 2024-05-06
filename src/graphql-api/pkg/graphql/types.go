@@ -1,10 +1,12 @@
 package graphql
 
 import (
+	"github.com/graphql-go/graphql"
 	"graphql-api/pkg/data/models"
 	"graphql-api/pkg/graphql/resolvers"
+	"graphql-api/internal/auth"
 
-	"github.com/graphql-go/graphql"
+
 )
 
 /*
@@ -52,17 +54,17 @@ var ContactQueriesType = graphql.NewObject(graphql.ObjectConfig{
 		"gets": &graphql.Field{
 			Type:    graphql.NewList(ContactGraphQLType),
 			Args:    SearhTextQueryArgument,
-			Resolve: resolvers.GetContactResolve,
+			Resolve: auth.AuthorizeResolverClean("contacts.gets", resolvers.GetContactResolve),
 		},
 		"getPagination": &graphql.Field{
 			Type:    ContactPaginationGraphQLType,
 			Args:    SearhTextPaginationQueryArgument,
-			Resolve: resolvers.GetContactsPaginationResolve,
+			Resolve: auth.AuthorizeResolverClean("contacts.getPagination",resolvers.GetContactsPaginationResolve),
 		},
 		"getById": &graphql.Field{
 			Type:    ContactGraphQLType,
 			Args:    IdArgument,
-			Resolve: resolvers.GetContactByIdResolve,
+			Resolve: auth.AuthorizeResolverClean("contacts.getById",resolvers.GetContactByIdResolve),
 		},
 
 	},
@@ -93,7 +95,7 @@ var ContactMutationsType = graphql.NewObject(graphql.ObjectConfig{
 		"createContact": &graphql.Field{
 			Type:    ContactGraphQLType,
 			Args:    CreateContactArgument,
-			Resolve: resolvers.CretateContactResolve,
+			Resolve: auth.AuthorizeResolverClean("contactMutations.createContact",resolvers.CretateContactResolve),
 		},
 		"createContacts": &graphql.Field{
 			Type:    StatusGraphQLType,
@@ -103,12 +105,12 @@ var ContactMutationsType = graphql.NewObject(graphql.ObjectConfig{
 		"updateContact": &graphql.Field{
 			Type:    ContactGraphQLType,
 			Args:    UpdateContactArgument,
-			Resolve: resolvers.UpdateContactResolve,
+			Resolve: auth.AuthorizeResolverClean("contactMutations.updateContact",resolvers.UpdateContactResolve),
 		},
 		"deleteContact": &graphql.Field{
 			Type:    StatusGraphQLType,
 			Args:    IdArgument,
-			Resolve: resolvers.DeleteContactResolve,
+			Resolve: auth.AuthorizeResolverClean("contactMutations.deleteContact",resolvers.DeleteContactResolve),
 		},
 	},
 })
