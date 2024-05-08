@@ -24,3 +24,4 @@ type ContactPaginationModel struct {
 	Contacts []*ContactModel `json:"contacts"`
 	Pagination *PaginationModel `json:"pagination"`
 }
+
