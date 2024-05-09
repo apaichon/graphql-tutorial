@@ -58,9 +58,11 @@ func handlers(graphqlHandler *handler.Handler) http.Handler {
 	rateLimitReqSec := viper.GetInt("RATE_LIMIT_REQ_SEC")
 	rateLimitBurst := viper.GetInt("RATE_LIMIT_BURST")
 	limit := rate.Every(time.Duration(rateLimitReqSec) * time.Second)
+	execTimeOut := viper.GetInt("EXEC_TIME_OUT")
 	auditLog := middleware.AuditLogMiddleware(graphqlHandler)
 	rateLimit:= middleware.RateLimitMiddleware(limit,rateLimitBurst)(auditLog)
-	return auth.AuthenticationHandler(rateLimit)
+	circuitBreaker := middleware.CircuitBreakerMiddleware(time.Duration(execTimeOut)* time.Second)(rateLimit)
+	return auth.AuthenticationHandler(circuitBreaker)
 	
 	
 }

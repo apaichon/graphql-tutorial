@@ -130,6 +130,7 @@ func GetContactResolve(params graphql.ResolveParams) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	// time.Sleep(1 * time.Minute)
 	return contacts, nil
 }
 
@@ -161,6 +162,7 @@ func GetContactsPaginationResolve(params graphql.ResolveParams) (interface{}, er
 	if err != nil {
 		return nil, err
 	}
+	
 	return contactPagination, nil
 }
 
