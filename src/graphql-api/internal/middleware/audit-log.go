@@ -4,24 +4,23 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"graphql-api/config"
-	"graphql-api/internal/auth"
-	"graphql-api/pkg/data/models"
-	"graphql-api/pkg/graphql"
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
+	// "os"
+	// "path/filepath"
 	"strings"
-	// "sync"
 	"time"
-
-	"graphql-api/pkg/graphql/utils"
-
 	"github.com/graphql-go/graphql/language/ast"
 	"github.com/mssola/user_agent"
 	"github.com/samborkent/uuidv7"
+	"graphql-api/config"
+	"graphql-api/internal/auth"
+	"graphql-api/internal/logger"
+	"graphql-api/pkg/data/models"
+	"graphql-api/pkg/graphql"
+	"graphql-api/pkg/graphql/utils"
+	
 )
 
 // AuditLog represents an entry in the audit log.
@@ -88,13 +87,14 @@ func writeLog(r *http.Request, crw *CustomResponseWriter, query string, start ti
 	logEntry := prepareLog(r, crw, query, start)
 
 	fmt.Printf("Audit Log: %+v\n", logEntry)
+	auditLog := logger.GetLogInitializer()
 
 	// Start the log writing Go routine
-	go writeLogToFile(*logEntry)
+	go auditLog.WriteLogToFile(*logEntry)
 }
 
 // Write log to a file
-func writeLogToFile(logEntry models.LogModel) {
+/* func writeLogToFile(logEntry models.LogModel) {
 
 	var currentLogFile *os.File
 	var currentLogFilePath string
@@ -150,6 +150,7 @@ func writeLogToFile(logEntry models.LogModel) {
 		}
 	
 }
+*/
 
 func prepareLog(r *http.Request, crw *CustomResponseWriter, bodyString string, start time.Time) *models.LogModel {
 

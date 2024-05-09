@@ -20,6 +20,9 @@ type Config struct {
 	SecretKey   string
 	TokenAge    int
 	GraphQLPort int
+	LogMergeMin int
+	LogMoveMin float64
+
 }
 
 var instance *Config
@@ -67,6 +70,20 @@ func NewConfig() *Config {
 			return
 		}
 		instance.TokenAge = tokenAge
+
+		logMergeMin, err := strconv.Atoi(os.Getenv("LOG_MERGE_MIN"))
+		if err != nil {
+			fmt.Println("Invalid LOG_MERGE_MIN value:", err)
+			return
+		}
+		instance.LogMergeMin = logMergeMin
+
+		logMoveMin, err := strconv.ParseFloat(os.Getenv("LOG_MOVE_MIN"),64)
+		if err != nil {
+			fmt.Println("Invalid LOG_MOVE_MIN value:", err)
+			return
+		}
+		instance.LogMoveMin = logMoveMin
 
 		// Parse DB port as integer
 		graphQlPortStr := os.Getenv("GRAPHQL_PORT")

@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"graphql-api/config"
 	"graphql-api/internal/auth"
+	"graphql-api/internal/logger"
+	"graphql-api/internal/middleware"
 	gql "graphql-api/pkg/graphql"
 
-	"graphql-api/internal/middleware"
 
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
@@ -34,16 +36,22 @@ func main() {
 		Playground: true,
 	})
 
+	go moveAuditLog(config)
 	// Serve GraphQL API at /graphql endpoint
-
-	// authenticated := auth.AuthenticationHandler(graphqlHandler)
-	// auditlog := middleware.AuditLogMiddleware(authenticated)
-	// http.Handle("/graphql", auditlog)
 	http.Handle("/graphql", auth.AuthenticationHandler(middleware.AuditLogMiddleware(graphqlHandler)))
 	http.HandleFunc("/login", auth.LoginHandler)
-
 	// Start the HTTP server
 	fmt.Printf(`Server is running at http://localhost:%v/graphql`, config.GraphQLPort)
 	http.ListenAndServe(fmt.Sprintf(`:%v`, config.GraphQLPort), nil)
+	
+}
 
+func moveAuditLog(cfg *config.Config) {
+	auditLog:= logger.GetLogInitializer()
+	 for {
+		fmt.Println("Run Move Audit Log")
+		auditLog.MoveLogsToSQLite()
+		fmt.Println("End Move Audit Log")
+		time.Sleep(time.Duration(cfg.LogMoveMin) * time.Minute)
+	 }
 }
