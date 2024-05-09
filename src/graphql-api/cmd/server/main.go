@@ -5,15 +5,17 @@ import (
 	"net/http"
 	"time"
 
+	"golang.org/x/time/rate"
 	"graphql-api/config"
 	"graphql-api/internal/auth"
-	"graphql-api/internal/logger"
 	"graphql-api/internal/middleware"
 	gql "graphql-api/pkg/graphql"
 
 
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
+	"github.com/spf13/viper"
+	
 )
 
 func main() {
@@ -36,9 +38,8 @@ func main() {
 		Playground: true,
 	})
 
-	go moveAuditLog(config)
 	// Serve GraphQL API at /graphql endpoint
-	http.Handle("/graphql", auth.AuthenticationHandler(middleware.AuditLogMiddleware(graphqlHandler)))
+	http.Handle("/graphql", handlers(graphqlHandler))
 	http.HandleFunc("/login", auth.LoginHandler)
 	// Start the HTTP server
 	fmt.Printf(`Server is running at http://localhost:%v/graphql`, config.GraphQLPort)
@@ -46,12 +47,21 @@ func main() {
 	
 }
 
-func moveAuditLog(cfg *config.Config) {
-	auditLog:= logger.GetLogInitializer()
-	 for {
-		fmt.Println("Run Move Audit Log")
-		auditLog.MoveLogsToSQLite()
-		fmt.Println("End Move Audit Log")
-		time.Sleep(time.Duration(cfg.LogMoveMin) * time.Minute)
-	 }
+func handlers(graphqlHandler *handler.Handler) http.Handler {
+	/* High Order Functions
+		* Authen
+		* RateLimit
+		* AuditLog
+		* GraphQLHanler
+		
+	*/
+	rateLimitReqSec := viper.GetInt("RATE_LIMIT_REQ_SEC")
+	rateLimitBurst := viper.GetInt("RATE_LIMIT_BURST")
+	limit := rate.Every(time.Duration(rateLimitReqSec) * time.Second)
+	auditLog := middleware.AuditLogMiddleware(graphqlHandler)
+	rateLimit:= middleware.RateLimitMiddleware(limit,rateLimitBurst)(auditLog)
+	return auth.AuthenticationHandler(rateLimit)
+	
+	
 }
+

@@ -2,12 +2,13 @@ package config
 
 import (
 	"fmt"
-	"os"
+	// "os"
 	"path/filepath"
-	"strconv"
+	// "strconv"
 	"sync"
 
 	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
 // Config represents application configuration
@@ -20,10 +21,29 @@ type Config struct {
 	SecretKey   string
 	TokenAge    int
 	GraphQLPort int
+	LogServerPort int
 	LogMergeMin int
 	LogMoveMin float64
-
+	RateLimitReqSec int
+	RateLimitBurst int
 }
+
+
+const (
+    DBHost     = "DB_HOST"
+    DBPort     = "DB_PORT"
+    DBUser     = "DB_USER"
+    DBPassword = "DB_PASSWORD"
+    DBName     = "DB_NAME"
+    SecretKey  = "SECRETE_KEY"
+    TokenAge   = "TOKEN_AGE"
+    GraphQLPort = "GRAPHQL_PORT"
+    LogServerPort = "LOG_SERVER_PORT"
+    LogMergeMin   = "LOG_MERGE_MIN"
+    LogMoveMin    = "LOG_MOVE_MIN"
+	RateLimitReqSec    = "RATE_LIMIT_REQ_SEC"
+	RateLimitBurst   = "RATE_LIMIT_BURST"
+)
 
 var instance *Config
 var once sync.Once
@@ -45,55 +65,23 @@ func NewConfig() *Config {
 			return
 		}
 
-		// Parse environment variables and create config object
+		viper.AutomaticEnv()
+
+		// Create a Config instance and set values from Viper
 		instance = &Config{
-			DBHost:     os.Getenv("DB_HOST"),
-			DBUser:     os.Getenv("DB_USER"),
-			DBPassword: os.Getenv("DB_PASSWORD"),
-			DBName:     os.Getenv("DB_NAME"),
-			SecretKey:  os.Getenv("SECRET_KEY"),
-		}
-
-		// Parse DB port as integer
-		dbPortStr := os.Getenv("DB_PORT")
-		if dbPortStr != "" {
-			dbPort, err := strconv.Atoi(dbPortStr)
-			if err != nil {
-				fmt.Println("Invalid DB_PORT value:", err)
-				return
-			}
-			instance.DBPort = dbPort
-		}
-		tokenAge, err := strconv.Atoi(os.Getenv("TOKEN_AGE"))
-		if err != nil {
-			fmt.Println("Invalid TOKEN_AGE value:", err)
-			return
-		}
-		instance.TokenAge = tokenAge
-
-		logMergeMin, err := strconv.Atoi(os.Getenv("LOG_MERGE_MIN"))
-		if err != nil {
-			fmt.Println("Invalid LOG_MERGE_MIN value:", err)
-			return
-		}
-		instance.LogMergeMin = logMergeMin
-
-		logMoveMin, err := strconv.ParseFloat(os.Getenv("LOG_MOVE_MIN"),64)
-		if err != nil {
-			fmt.Println("Invalid LOG_MOVE_MIN value:", err)
-			return
-		}
-		instance.LogMoveMin = logMoveMin
-
-		// Parse DB port as integer
-		graphQlPortStr := os.Getenv("GRAPHQL_PORT")
-		if graphQlPortStr != "" {
-			graphQLPort, err := strconv.Atoi(graphQlPortStr)
-			if err != nil {
-				fmt.Println("Invalid GRAPHQL_PORT value:", err)
-				return
-			}
-			instance.GraphQLPort = graphQLPort
+			DBHost:     viper.GetString(DBHost),
+			DBPort:     viper.GetInt(DBPort),
+			DBUser:     viper.GetString(DBUser),
+			DBPassword: viper.GetString(DBPassword),
+			DBName:     viper.GetString(DBName),
+			SecretKey:  viper.GetString(SecretKey),
+			TokenAge:   viper.GetInt(TokenAge),
+			GraphQLPort: viper.GetInt(GraphQLPort),
+			LogServerPort: viper.GetInt(LogServerPort),
+			LogMergeMin:   viper.GetInt(LogMergeMin),
+			LogMoveMin:    viper.GetFloat64(LogMoveMin),
+			RateLimitReqSec:   viper.GetInt(RateLimitReqSec),
+			RateLimitBurst:    viper.GetInt(RateLimitBurst),
 		}
 	})
 	return instance
