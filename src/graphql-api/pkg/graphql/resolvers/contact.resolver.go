@@ -130,7 +130,7 @@ func GetContactResolve(params graphql.ResolveParams) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	// time.Sleep(1 * time.Minute)
+	time.Sleep(1 * time.Minute)
 	return contacts, nil
 }
 

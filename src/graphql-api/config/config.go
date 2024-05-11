@@ -2,11 +2,8 @@ package config
 
 import (
 	"fmt"
-	// "os"
 	"path/filepath"
-	// "strconv"
 	"sync"
-
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
