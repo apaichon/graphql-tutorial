@@ -62,6 +62,5 @@ func handlers(graphqlHandler *handler.Handler) http.Handler {
 	auditLog := middleware.AuditLogMiddleware(graphqlHandler)
 	rateLimit := middleware.RateLimitMiddleware(limit, rateLimitBurst)(auditLog)
 	circuitBreaker := middleware.CircuitBreakerMiddleware(time.Duration(execTimeOut) * time.Second)(rateLimit)
-	// return auth.AuthenticationHandler(circuitBreaker)
-	return circuitBreaker
+	return auth.AuthenticationHandler(circuitBreaker)
 }
