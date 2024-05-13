@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"context"
+	"os"
+	"os/signal"
+	"log"
 
 	"graphql-api/config"
 	"graphql-api/internal/auth"
 	"graphql-api/internal/middleware"
+	"graphql-api/internal/monitoring"
 	gql "graphql-api/pkg/graphql"
 
 	"golang.org/x/time/rate"
@@ -18,10 +23,21 @@ import (
 )
 
 func main() {
+	
+	shutdown, err :=  monitoring.InitTracer(viper.GetString("TRACE_EXPORTER_URL"))
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
 
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err := shutdown(ctx); err != nil {
+			log.Fatal("failed to shutdown TracerProvider: %w", err)
+		}
+	}()
 	// Load configuration
 	config := config.NewConfig()
-
 	schema, err := graphql.NewSchema(graphql.SchemaConfig{
 		Query:    gql.RootQuery,
 		Mutation: gql.RootMutation,
@@ -39,6 +55,7 @@ func main() {
 
 	// Serve GraphQL API at /graphql endpoint
 	http.Handle("/graphql", handlers(graphqlHandler))
+	
 	// http.Handle("/graphql", graphqlHandler)
 	http.HandleFunc("/login", auth.LoginHandler)
 	// Start the HTTP server

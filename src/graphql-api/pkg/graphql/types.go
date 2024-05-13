@@ -1,12 +1,13 @@
 package graphql
 
 import (
-	"github.com/graphql-go/graphql"
+	"graphql-api/internal/auth"
+	"graphql-api/internal/cache"
+	"graphql-api/internal/monitoring"
 	"graphql-api/pkg/data/models"
 	"graphql-api/pkg/graphql/resolvers"
-	"graphql-api/internal/auth"
 
-
+	"github.com/graphql-go/graphql"
 )
 
 /*
@@ -34,16 +35,14 @@ var ContactGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 var ContactPaginationGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "ContactPagination",
 	Fields: graphql.Fields{
-		"contacts": &graphql.Field{Type: graphql.NewList(ContactGraphQLType)},
-		"pagination":       &graphql.Field{Type: PaginationGraphQLType  },	
+		"contacts":   &graphql.Field{Type: graphql.NewList(ContactGraphQLType)},
+		"pagination": &graphql.Field{Type: PaginationGraphQLType},
 		// Add field here
 	},
 })
 
-
-
 type ContactQueries struct {
-	Gets func(string) ([]*models.ContactModel, error) `json:"gets"`
+	Gets          func(string) ([]*models.ContactModel, error)         `json:"gets"`
 	GetPagination func(string) (*models.ContactPaginationModel, error) `json:"getPagination"`
 }
 
@@ -54,39 +53,37 @@ var ContactQueriesType = graphql.NewObject(graphql.ObjectConfig{
 		"gets": &graphql.Field{
 			Type:    graphql.NewList(ContactGraphQLType),
 			Args:    SearhTextQueryArgument,
-			Resolve: auth.AuthorizeResolverClean("contacts.gets", resolvers.GetContactResolve),
+			Resolve: auth.AuthorizeResolverClean("contacts.gets", monitoring.TraceResolver( cache.GetCacheResolver(resolvers.GetContactResolve))),
 		},
 		"getPagination": &graphql.Field{
 			Type:    ContactPaginationGraphQLType,
 			Args:    SearhTextPaginationQueryArgument,
-			Resolve: auth.AuthorizeResolverClean("contacts.getPagination",resolvers.GetContactsPaginationResolve),
+			Resolve: auth.AuthorizeResolverClean("contacts.getPagination", cache.GetCacheResolver(resolvers.GetContactsPaginationResolve)),
 		},
 		"getById": &graphql.Field{
 			Type:    ContactGraphQLType,
 			Args:    IdArgument,
-			Resolve: auth.AuthorizeResolverClean("contacts.getById",resolvers.GetContactByIdResolve),
+			Resolve: auth.AuthorizeResolverClean("contacts.getById", cache.GetCacheResolver(resolvers.GetContactByIdResolve)),
 		},
-
 	},
 })
 
 type ContactMutations struct {
-	CreateContact func(map[string]interface{}) (*models.ContactModel, error) `json:"createContact"`
+	CreateContact  func(map[string]interface{}) (*models.ContactModel, error)   `json:"createContact"`
 	CreateContacts func(map[string]interface{}) ([]*models.ContactModel, error) `json:"createContacts"`
-	UpdateContact func(map[string]interface{}) (*models.Status, error) `json:"updateContact"`	
-	DeleteContact func(int) (*models.Status, error) `json:"deleteContact"`	
+	UpdateContact  func(map[string]interface{}) (*models.Status, error)         `json:"updateContact"`
+	DeleteContact  func(int) (*models.Status, error)                            `json:"deleteContact"`
 }
 
 var StatusGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Status",
 	Fields: graphql.Fields{
 		"status_id": &graphql.Field{Type: graphql.Int},
-		"status": &graphql.Field{Type: graphql.String},
-		"message": &graphql.Field{Type: graphql.String},
+		"status":    &graphql.Field{Type: graphql.String},
+		"message":   &graphql.Field{Type: graphql.String},
 		// Add field here
 	},
 })
-
 
 // Define the ContactMutations type
 var ContactMutationsType = graphql.NewObject(graphql.ObjectConfig{
@@ -95,7 +92,7 @@ var ContactMutationsType = graphql.NewObject(graphql.ObjectConfig{
 		"createContact": &graphql.Field{
 			Type:    ContactGraphQLType,
 			Args:    CreateContactArgument,
-			Resolve: auth.AuthorizeResolverClean("contactMutations.createContact",resolvers.CretateContactResolve),
+			Resolve: auth.AuthorizeResolverClean("contactMutations.createContact", resolvers.CretateContactResolve),
 		},
 		"createContacts": &graphql.Field{
 			Type:    StatusGraphQLType,
@@ -105,12 +102,12 @@ var ContactMutationsType = graphql.NewObject(graphql.ObjectConfig{
 		"updateContact": &graphql.Field{
 			Type:    ContactGraphQLType,
 			Args:    UpdateContactArgument,
-			Resolve: auth.AuthorizeResolverClean("contactMutations.updateContact",resolvers.UpdateContactResolve),
+			Resolve: auth.AuthorizeResolverClean("contactMutations.updateContact", resolvers.UpdateContactResolve),
 		},
 		"deleteContact": &graphql.Field{
 			Type:    StatusGraphQLType,
 			Args:    IdArgument,
-			Resolve: auth.AuthorizeResolverClean("contactMutations.deleteContact",resolvers.DeleteContactResolve),
+			Resolve: auth.AuthorizeResolverClean("contactMutations.deleteContact", resolvers.DeleteContactResolve),
 		},
 	},
 })
@@ -153,8 +150,8 @@ var EventGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 		"start_date":      &graphql.Field{Type: graphql.DateTime},
 		"end_date":        &graphql.Field{Type: graphql.DateTime},
 		"location_id":     &graphql.Field{Type: graphql.Int},
-		"created_at": &graphql.Field{Type: graphql.DateTime},
-		"created_by": &graphql.Field{Type: graphql.String},
+		"created_at":      &graphql.Field{Type: graphql.DateTime},
+		"created_by":      &graphql.Field{Type: graphql.String},
 		// Add field here
 	},
 })
@@ -187,10 +184,10 @@ Ticket Type
 var TicketGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Ticket",
 	Fields: graphql.Fields{
-		"ticket_id": &graphql.Field{Type: graphql.Int},
-		"type":      &graphql.Field{Type: graphql.String},
-		"price":     &graphql.Field{Type: graphql.Float},
-		"event_id":    &graphql.Field{Type: graphql.Int},
+		"ticket_id":  &graphql.Field{Type: graphql.Int},
+		"type":       &graphql.Field{Type: graphql.String},
+		"price":      &graphql.Field{Type: graphql.Float},
+		"event_id":   &graphql.Field{Type: graphql.Int},
 		"created_at": &graphql.Field{Type: graphql.DateTime},
 		"created_by": &graphql.Field{Type: graphql.String},
 		// Add field here
@@ -218,6 +215,7 @@ var TicketQueriesType = graphql.NewObject(graphql.ObjectConfig{
 		},
 	},
 })
+
 /*
 Ticket Event Type
 */
@@ -253,13 +251,12 @@ Pagination Type
 var PaginationGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Pagination",
 	Fields: graphql.Fields{
-		"page": &graphql.Field{Type: graphql.Int},
-		"pageSize":  &graphql.Field{Type: graphql.Int},
+		"page":        &graphql.Field{Type: graphql.Int},
+		"pageSize":    &graphql.Field{Type: graphql.Int},
 		"totalPages":  &graphql.Field{Type: graphql.Int},
 		"totalItems":  &graphql.Field{Type: graphql.Int},
-		"hasNext":  &graphql.Field{Type: graphql.Boolean},
-		"hasPrevious":  &graphql.Field{Type: graphql.Boolean},
+		"hasNext":     &graphql.Field{Type: graphql.Boolean},
+		"hasPrevious": &graphql.Field{Type: graphql.Boolean},
 		// Add field here
 	},
 })
-

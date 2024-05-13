@@ -2,8 +2,8 @@
 ## Lab7.1 - Audit Log
 **Objective:** สร้างฟังก์ชั่นเก็บ Log รองรับ งาน Audit Log
 **ไฟล์ทีี่เกี่ยวข้องใน Lab นี้**
-```plantuml
 
+```plantuml
 @startmindmap
 * data
 ** event.db

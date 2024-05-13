@@ -5,6 +5,7 @@ import (
 	"graphql-api/internal/contact"
 	"graphql-api/pkg/data/models"
 	"time"
+	"graphql-api/internal/cache"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/graphql-go/graphql"
@@ -58,6 +59,7 @@ func CretateContactResolve(params graphql.ResolveParams) (interface{}, error) {
 		return nil, err
 	}
 	contactInput.ContactId = int64(id)
+	go cache.RemoveGetCacheResolver("ContactQueries")
 	return contactInput, nil
 }
 
@@ -98,10 +100,10 @@ func CreateContactsResolve(params graphql.ResolveParams) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	result:= models.Status {
-		StatusID: 200,
+	result := models.Status{
+		StatusID:   200,
 		StatusText: "OK",
-		Message: fmt.Sprintf("Total Items:%v", total),
+		Message:    fmt.Sprintf("Total Items:%v", total),
 	}
 
 	return result, nil
@@ -130,7 +132,10 @@ func GetContactResolve(params graphql.ResolveParams) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	time.Sleep(1 * time.Minute)
+	// time.Sleep(1 * time.Minute)
+
+	go cache.SetCacheResolver(params, contacts)
+	
 	return contacts, nil
 }
 
@@ -162,7 +167,9 @@ func GetContactsPaginationResolve(params graphql.ResolveParams) (interface{}, er
 	if err != nil {
 		return nil, err
 	}
-	
+
+	go cache.SetCacheResolver(params, contacts)
+
 	return contactPagination, nil
 }
 
@@ -175,6 +182,7 @@ func GetContactByIdResolve(params graphql.ResolveParams) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	go cache.SetCacheResolver(params, contact)
 	return contact, nil
 }
 
@@ -224,10 +232,10 @@ func DeleteContactResolve(params graphql.ResolveParams) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	result:= models.Status {
-		StatusID: 200,
+	result := models.Status{
+		StatusID:   200,
 		StatusText: "OK",
-		Message: fmt.Sprintf("Delete id:%v successfully.", contact_id),
+		Message:    fmt.Sprintf("Delete id:%v successfully.", contact_id),
 	}
 
 	return result, nil
