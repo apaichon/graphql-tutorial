@@ -5,6 +5,16 @@
             "driver": "SQLite",
             "name": "event_db",
             "database": "${workspaceFolder:graphql-tutorial}/data/event.db"
+        },
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "metricdb",
+            "database": "metricdb",
+            "username": "admin",
+            "password": "P@ssw0rd"
         }
     ]
 }

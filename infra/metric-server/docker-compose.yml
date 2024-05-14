@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg13
+    environment:
+      - POSTGRES_PASSWORD=P@ssw0rd
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=metricdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./timescaledb_data:/var/lib/postgresql/data
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=P@ssw0rd
+    ports:
+      - "3005:3000"
+    depends_on:
+      - timescaledb
+
+volumes:
+  timescaledb_data:

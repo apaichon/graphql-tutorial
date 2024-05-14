@@ -1,7 +1,7 @@
 # Module 8: Performance and Monitoring
 ## Lab8.1 - Cache
 **Objective:** Understand the purpose of using Cache and apply it.
-**Related files in this lab**
+**Related files in this Lab**
 ```plantuml
 @startmindmap
 * data
@@ -27,13 +27,14 @@
 @endmindmap
 
 ```
-**Prerequisit**
-Install Redis in Docker
+**Step**
+1. Install Redis in Docker
 ```bash
 docker run -p 6379:6379 --name redis -d redis
 
 ```
-1. Create a Redis object in the internale/cache/cache.go folder. Enter the code:
+
+2. Create a Redis object in the *internale/cache/cache.go* folder. Enter the code:
 
 ```go
 package cache
@@ -163,7 +164,7 @@ func (rc *RedisClient) Removes(key string) {
 }
 ```
 
-2. Create a Sqlite Object for Caching with SQLite at internal/cached/sqlite.go. Enter the code as follows.
+3. Create a Sqlite Object for Caching with SQLite at *internal/cached/sqlite.go* Enter the code as follows.
 
 ```go
 package cache
@@ -270,8 +271,10 @@ func (sc *SQLiteInMemClient) Remove(key string) error {
 func (sc *SQLiteInMemClient) Removes(key string)  {
 	sc.db.Exec("DELETE FROM cache WHERE key Like ?", "%"+key+"*%")
 }
+
 ```
-3. Create a Cache Interface for supporting Cache selection between Redis or Sqlite at the file *internal/cache/cache.go*  enter the code as follows.
+
+4. Create a Cache Interface for supporting Cache selection between Redis or Sqlite at the file *internal/cache/cache.go*  enter the code as follows.
 
 ```go
 package cache
@@ -358,7 +361,7 @@ func (c *Cache) Removes(key string) {
 }
 ```
 
-4. Add Configuration values ​​about Cache to the .env file.
+5. Add Configuration values ​​about Cache to the .env file.
 ```bash
 CACHE_PROVIDER=0 #Redis
 CACHE_CON_STR=127.0.0.1:6379
@@ -366,7 +369,7 @@ CACHE_PASSWORD=
 CACHE_INDEX=0
 CACHE_AGE=300
 ```
-5. Create a Cache Resovlver to put in Resolver at the file *internale/cache/cache-resolver.go*. Enter the code as follows.
+6. Create a Cache Resovlver to put in Resolver at the file *internale/cache/cache-resolver.go*. Enter the code as follows.
 
 ```go
 package cache
@@ -461,7 +464,7 @@ func convertToMap(jsonStr string) (map[string]interface{}, error) {
 
 ```
 
-6. Implement the *GetCacheResolver* function. put it in the function *ContactQueries* Type in various Gets sections
+7. Implement the *GetCacheResolver* function. put it in the function *ContactQueriesType* in various Gets sections.
 
 ```go
 // pkg/graphql/types.go
@@ -494,7 +497,7 @@ var ContactQueriesType = graphql.NewObject(graphql.ObjectConfig{
 })
 ```
 
-7. Put the SetCacheResolver function in *pkg/graphql/resolvers/contact.resolver.go* or the desired resolver get in the various Gets section after successful processing.
+8. Put the *SetCacheResolver* function in *pkg/graphql/resolvers/contact.resolver.go* or the desired resolver get in the various Gets section after successful processing.
 
 ```go
 func GetContactResolve(params graphql.ResolveParams) (interface{}, error) {
@@ -577,7 +580,7 @@ func GetContactByIdResolve(params graphql.ResolveParams) (interface{}, error) {
 }
 ```
 
-8. Put the *RemoveGetCacheResolver* function in *CretateContactResolve*. When new information is created This ensures that users receive updated information when data is retrieved.
+9. Put the *RemoveGetCacheResolver* function in *CretateContactResolve*. When new information is created This ensures that users receive updated information when data is retrieved.
 
 ```go
 func CretateContactResolve(params graphql.ResolveParams) (interface{}, error) {
@@ -617,7 +620,8 @@ func CretateContactResolve(params graphql.ResolveParams) (interface{}, error) {
 	return contactInput, nil
 }
 ```
-ึ9. Test Query and Mutation
+
+10. Test Query and Mutation
 
 ```graphql
 {
@@ -652,48 +656,7 @@ func CretateContactResolve(params graphql.ResolveParams) (interface{}, error) {
 }
 
 ```
-**Mutation**
-*Query*
-```graphql
-mutation CreateContact($input: CreateContactInput, $input2: CreateContactInput) {
-  contactMutations {
-    contact1: createContact(input: $input) {
-      contact_id
-    }
-    contact2: createContact(input: $input2) {
-      contact_id
-    }
-  }
-}
 
-``
-*Variables*
-```json
-{
-  "input": {
-    "name": "ABC",
-    "first_name": "PUP3",
-    "last_name": "Apaichon4",
-    "gender_id": 1,
-    "dob": "1979-11-13T00:00:00Z",
-    "email": "john@example.com",
-    "phone": "123-456-7890",
-    "address": "123 Main St",
-    "photo_path": "path/to/photo.jpg"
-  },
-  "input2": {
-    "name": "Dr.PUP3",
-    "first_name": "PUP3",
-    "last_name": "Apaichon3",
-    "gender_id": 1,
-    "dob": "1979-11-13T00:00:00Z",
-    "email": "john@example.com",
-    "phone": "123-456-7890",
-    "address": "123 Main St",
-    "photo_path": "path/to/photo.jpg"
-  }
-}
-```
 ## Lab8.2 - Open Telemetry
 **Objective:** Understand the purpose of using Open Telemetry for Trace Monitoring.
 **Related files in this lab**
@@ -813,7 +776,7 @@ func TraceResolver(resolverFunc func(p graphql.ResolveParams) (interface{}, erro
 ```bash
 TRACE_EXPORTER_URL=http://localhost:9411/api/v2/spans
 ```
-6. Apply otel in the file cmd/server/main.go import package monitoring in main.go and call the InitTracer function as follows
+6. Apply otel in the file *cmd/server/main.go* import package monitoring in main.go and call the InitTracer function as follows.
 
 ```go
 import
@@ -891,8 +854,463 @@ var ContactQueriesType = graphql.NewObject(graphql.ObjectConfig{
 ![SQL Tools](./images/lab8/figure8.1.png)
 *Figure 8.1 Zipkin Trace Monitor.*
 
-
 ## Lab8.3 - Metric Monitoring
+**Objective:** Understand the purpose of using Metrics and apply them.
+**ไฟล์ทีี่เกี่ยวข้องใน Lab นี้**
+```plantuml
+@startmindmap
+* data
+** event.db
+* src
+** graphql-api
+*** cmd
+**** server
+***** main.go
+*** config
+**** .env
+*** internal
+**** logger
+***** logger.go
+***** postgres-logger.go
+*** pkg
+**** data
+***** postgresdb.go
+**** maintenance
+***** main.go
+@endmindmap
 
+```
+1. Prepare the docker-compose file in the root folder of the project at */graphql-tutorial/infra/metric-server/docker-compose.yml* with the following code.
+```go
+version: '3.8'
 
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg13
+    environment:
+      - POSTGRES_PASSWORD=P@ssw0rd
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=metricdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./timescaledb_data:/var/lib/postgresql/data
 
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=P@ssw0rd
+    ports:
+      - "3005:3000"
+    depends_on:
+      - timescaledb
+
+volumes:
+  timescaledb_data:
+```
+2. Prepare the code for connecting to the Postgres database at *pkg/data/postgresdb.go* with the code as follows.
+
+```go
+package data
+
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"sync"
+
+	"graphql-api/config"
+
+	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
+)
+
+// DB represents the PostgreSQL database
+type PostgresDB struct {
+	Connection *sql.DB
+}
+
+var postgresInstance *PostgresDB
+var postgresOnce sync.Once
+
+// NewDB initializes a new instance of the DB struct
+func NewPostgresDB() *PostgresDB {
+	postgresOnce.Do(func() {
+		config := config.NewConfig()
+		connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+			config.DBHost, config.DBPort, config.DBUser, config.DBPassword, viper.GetString("METRIC_DB"))
+		conn, err := sql.Open("postgres", connStr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		postgresInstance = &PostgresDB{conn}
+	})
+	return postgresInstance
+}
+
+// Close closes the database connection
+func (db *PostgresDB) Close() error {
+	if db.Connection == nil {
+		return nil
+	}
+	return db.Connection.Close()
+}
+
+// Insert inserts data into the specified table
+func (db *PostgresDB) Insert(query string, args ...interface{}) (sql.Result, error) {
+	stmt, err := db.Connection.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute statement: %v", err)
+	}
+
+	return result, nil
+}
+
+// Query executes a query and returns rows
+func (db *PostgresDB) Query(query string, args ...interface{}) (*sql.Rows, error) {
+	rows, err := db.Connection.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %v", err)
+	}
+
+	return rows, nil
+}
+
+// QueryRow executes a query that is expected to return at most one row
+func (db *PostgresDB) QueryRow(query string, args ...interface{}) *sql.Row {
+	row := db.Connection.QueryRow(query, args...)
+	return row
+}
+
+// Delete executes a delete statement
+func (db *PostgresDB) Delete(query string, args ...interface{}) (sql.Result, error) {
+	stmt, err := db.Connection.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute statement: %v", err)
+	}
+
+	return result, nil
+}
+
+// Update executes an update statement
+func (db *PostgresDB) Update(query string, args ...interface{}) (sql.Result, error) {
+	stmt, err := db.Connection.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute statement: %v", err)
+	}
+
+	return result, nil
+}
+
+func (db *PostgresDB) Begin() (*sql.Tx, error) {
+	tx, err := db.Connection.Begin()
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+	return tx, nil
+}
+
+func (db *PostgresDB) Prepare(query string) (*sql.Stmt, error) {
+	stmt, err := db.Connection.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare statement: %v", err)
+	}
+	return stmt, nil
+}
+
+func (db *PostgresDB) Exec(query string, args ...interface{}) (sql.Result, error) {
+	result, err := db.Connection.Exec(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute statement: %v", err)
+	}
+	return result, nil
+}
+```
+
+3. Add a function for writing data to the log table to the Postgres database at internal/postgres-logger.go with the following code.
+
+```go
+package logger
+
+import (
+	"fmt"
+	"graphql-api/pkg/data"
+	"graphql-api/pkg/data/models"
+)
+
+// Logger represents the repository for logging operations
+type PostgresLogger struct {
+	DB *data.PostgresDB
+}
+
+// NewLogger creates a new instance of Logger
+func NewPostgresLogger() *PostgresLogger {
+	db := data.NewPostgresDB()
+	return &PostgresLogger{DB: db}
+}
+
+// InsertLog inserts multiple LogModel entries into the database
+func (logger *PostgresLogger) InsertLog(logEntries []models.LogModel) error {
+	// Prepare the SQL insert statement
+	query := `
+    INSERT INTO logs (
+        log_id,
+        timestamp,
+        user_id,
+        action,
+        resource,
+        status,
+        client_ip,
+        client_device,
+        client_os,
+        client_os_ver,
+        client_browser,
+        client_browser_ver,
+        duration,
+        errors
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+    `
+
+	// Prepare the SQL statement
+	stmt, err := logger.DB.Prepare(query)
+	if err != nil {
+		return fmt.Errorf("error preparing insert statement: %w", err)
+	}
+	defer stmt.Close()
+
+	// Iterate through the log entries and insert each one
+	for _, logEntry := range logEntries {
+		_, err := stmt.Exec(
+			logEntry.LogId,
+			logEntry.Timestamp,
+			logEntry.UserId,
+			logEntry.Actions,
+			logEntry.Resource,
+			logEntry.Status,
+			logEntry.ClientIp,
+			logEntry.ClientDevice,
+			logEntry.ClientOs,
+			logEntry.ClientOsVersion,
+			logEntry.ClientBrowser,
+			logEntry.ClientBrowserVersion,
+			logEntry.Duration.Nanoseconds(),
+			logEntry.Errors,
+		)
+
+		if err != nil {
+			return fmt.Errorf("error inserting log: %w", err)
+		}
+	}
+
+	return nil
+}
+
+```
+
+4. Add a function to read log files and write them to the Postgres database at *internal/logger/logger.go*. Add code as follows.
+
+```go
+// Function to read the last log file and insert its content into SQLite
+func (li *Logger) MoveLogsToPostgres() {
+
+	absolutePath, err := filepath.Abs(relativePath)
+	if err != nil {
+		log.Printf("Error reading logs directory: %v", err)
+		return
+	}
+
+	// Get and sort the files by the oldest modification time
+	files, err := listFilesOrderedByOldest(absolutePath)
+	if err != nil {
+		log.Fatalf("Error reading directory: %v", err)
+	}
+
+	if len(files) == 0 {
+		return // No logs to process
+	}
+
+	// Read the log file and insert into SQLite
+	logFilePath := filepath.Join(absolutePath, files[0].Name)
+	file, err := os.Open(logFilePath)
+	if err != nil {
+		log.Printf("Error opening log file: %v", err)
+		return
+	}
+
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	var logList []models.LogModel
+	for scanner.Scan() {
+		var logEntry models.LogModel
+		if err := json.Unmarshal([]byte(scanner.Text()), &logEntry); err != nil {
+			log.Printf("Error unmarshaling log data: %v", err)
+			continue
+		}
+
+		log.Printf("Error inserting into SQLite: %v", logEntry)
+		logList = append(logList, logEntry)
+		// fmt.Printf("%v", logList)
+	}
+
+	logger := NewPostgresLogger()
+	logger.InsertLog(logList)
+
+	// Delete the log file after processing
+	err = os.Remove(logFilePath)
+	if err != nil {
+		log.Printf("Error deleting log file: %v", err)
+	}
+
+}
+```
+
+5. Change the function in Background Process in *pkg/maintenance/main.go* that is responsible for writing logs to the database. Change from Sqlite to use Postgres as follows.
+```go
+package main
+
+import (
+	"os"
+	"time"
+
+	"graphql-api/config"
+	"graphql-api/internal/logger"
+	"log"
+)
+
+func main() {
+	// Load configuration
+	config := config.NewConfig()
+	go moveAuditLog(config)
+	// Keep the main goroutine alive
+	select {}
+}
+
+func moveAuditLog(cfg *config.Config) {
+	auditLog := logger.GetLogInitializer()
+	logger := log.New(os.Stdout, "", log.LstdFlags|log.Lmicroseconds)
+	for {
+		logger.Println("[info] - Run Move Audit Log")
+		// เปลี่ยนตรงนี้
+		auditLog.MoveLogsToPostgres()
+		logger.Println("[info] - End Move Audit Log")
+		time.Sleep(time.Duration(cfg.LogMoveMin) * time.Minute)
+	}
+}
+```
+
+6. Prepare the Server for Postgres TimescaleDB and Grafana for Metric Monitoring. Open the terminal command line, go to infra/metric-server, type
+
+```go
+docker-compose up
+```
+
+ึ7. Install SQLTools Postgres in VSCode to connect to the Timescaledb database.
+
+![SQL Tools](./images/lab8/figure8.2.png)
+*Figure 8.2 Postgres Extension.*
+
+8. Setup values ​​to connect to Postgres according to the values ​​in Docker Compose.
+
+![SQL Tools](./images/lab8/figure8.3.png)
+*Figure 8.3 Postgres Setup.*
+
+9. Create a database named logs, enter sql as follows.
+```sql
+
+CREATE TABLE IF NOT EXISTS logs (
+    log_id varchar(50),
+    timestamp TIMESTAMPTZ NOT NULL,
+    user_id INTEGER,
+    action varchar(100),
+    resource varchar(50),
+    status varchar(50),
+    client_ip varchar(50),
+    client_device varchar(50),
+    client_os varchar(50),
+    client_os_ver varchar(50),
+    client_browser varchar(50),
+    client_browser_ver varchar(50),
+    duration INTERVAL, -- Using INTERVAL to store duration
+    errors varchar(50),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create a time-series hypertable partitioned by timestamp
+SELECT create_hypertable('logs', 'timestamp');
+
+```
+10. Create a View for summarizing success and errors from the log.
+```sql
+
+CREATE OR REPLACE VIEW vw_log_status_summary
+AS 
+SELECT
+timestamp,
+    action,
+    CASE WHEN status = 'OK' and errors = '' THEN 1 ELSE  0 END AS success,
+    CASE WHEN errors IS NOT NULL AND errors != '' THEN 1 ELSE 0 END error
+FROM
+    logs
+```
+11. Test graphql Query to create logs
+12. Run *maintenance/main.go* To test writing logs to postres
+13. Open your browser and go to localhost:3005. to access Grafana
+14. Add Data Source Postgres to Grafana
+
+![SQL Tools](./images/lab8/figure8.4.png)
+*Figure 8.4 Add Datasource at Grafana.*
+
+![SQL Tools](./images/lab8/figure8.5.png)
+*Figure 8.5 Add Postgres at Grafana.*
+
+ ![SQL Tools](./images/lab8/figure8.6.png)
+*Figure 8.6 Postgres Setting.*
+
+Look at the ip in docker.
+
+```bash
+docker exec -it ed2982693173 bash
+```
+```bash
+ed2982693173:/# ifconfig
+eth0      Link encap:Ethernet  HWaddr 02:42:AC:16:00:02
+		 # Look at this line of ip.
+          inet addr:172.22.0.2  Bcast:172.22.255.255  Mask:255.255.0.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:3714 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:2862 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:543180 (530.4 KiB)  TX bytes:1188205 (1.1 MiB)
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:28708 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:28708 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:10306281 (9.8 MiB)  TX bytes:10306281 (9.8 MiB)
+```
+15. Create a Dashboard named Api Status.
+
+ ![SQL Tools](./images/lab8/figure8.7.png)
+*Figure 8.7 Create Visulization.*
+
+16. Enter Query and select refresh every 5 minutes and fire Graphql query continuously.

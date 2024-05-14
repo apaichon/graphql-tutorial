@@ -141,12 +141,65 @@ func (li *Logger) MoveLogsToSQLite() {
 			continue
 		}
 
-		log.Printf("Error inserting into SQLite: %v", logEntry)
+		log.Printf("inserting into SQLite: %v", logEntry)
 		logList = append(logList, logEntry)
 		// fmt.Printf("%v", logList)
 	}
 
 	logger := NewSqliteLogger()
+	logger.InsertLog(logList)
+
+	// Delete the log file after processing
+	err = os.Remove(logFilePath)
+	if err != nil {
+		log.Printf("Error deleting log file: %v", err)
+	}
+
+}
+
+// Function to read the last log file and insert its content into SQLite
+func (li *Logger) MoveLogsToPostgres() {
+
+	absolutePath, err := filepath.Abs(relativePath)
+	if err != nil {
+		log.Printf("Error reading logs directory: %v", err)
+		return
+	}
+
+	// Get and sort the files by the oldest modification time
+	files, err := listFilesOrderedByOldest(absolutePath)
+	if err != nil {
+		log.Fatalf("Error reading directory: %v", err)
+	}
+
+	if len(files) == 0 {
+		return // No logs to process
+	}
+
+	// Read the log file and insert into SQLite
+	logFilePath := filepath.Join(absolutePath, files[0].Name)
+	file, err := os.Open(logFilePath)
+	if err != nil {
+		log.Printf("Error opening log file: %v", err)
+		return
+	}
+
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	var logList []models.LogModel
+	for scanner.Scan() {
+		var logEntry models.LogModel
+		if err := json.Unmarshal([]byte(scanner.Text()), &logEntry); err != nil {
+			log.Printf("Error unmarshaling log data: %v", err)
+			continue
+		}
+
+		log.Printf("inserting into Postgres: %v", logEntry)
+		logList = append(logList, logEntry)
+		// fmt.Printf("%v", logList)
+	}
+
+	logger := NewPostgresLogger()
 	logger.InsertLog(logList)
 
 	// Delete the log file after processing
