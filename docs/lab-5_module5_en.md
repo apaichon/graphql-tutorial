@@ -576,10 +576,10 @@ mutation {
   }
 }
 ```
-
 ## Lab5.5 - Multiple insert data with exist mutation.
 **Objective:** Understand how to write GraphQuery Mutations to insert multiple data items from existing Mutations.
 **Related files in this Lab**
+
 Use the same group of files from the insert example.
 
 **Query**
@@ -624,12 +624,12 @@ mutation CreateContact($input: CreateContactInput, $input2: CreateContactInput) 
 }
 ```
 
-
 ## Lab5.6 - Multiple insert data with best performance for database.
-**Objective:** 
-Understand how to write GraphQuery Mutations to insert multiple data items by adding Mutations to support adding large amounts of data that are suitable for batch operations in the database.
-**Related files in this lab**
+**Objective:** Understand how to write GraphQuery Mutations to insert multiple data items by adding Mutations to support adding large amounts of data that are suitable for batch operations in the database.
+**ไฟล์ทีี่เกี่ยวข้องใน Lab นี้**
+
 Use the same group of files from the insert example to add functions to different parts.
+
 1. Add function *InsertContacts* in the file *internal/contact/contact.repo.go* as follows
 ```go
 func (cr *ContactRepo) InsertContacts(contacts []*models.ContactModel) ( int64, error) {

@@ -847,7 +847,9 @@ Alias เป็นการตั้งชื่อ Resolve ที่ต้อ�
 ## Lab 4.4 - Relation Type
 **Objective:** Understand Relation Type design
 In many examples of Relation Type designs, different types are often combined together.
-**ตัวอย่าง**
+
+**Example**
+
 Ticket A ticket has a relationship with an event. One ticket belongs to one event.
 
 Database structure

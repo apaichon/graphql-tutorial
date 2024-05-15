@@ -141,6 +141,7 @@ var RootMutation = graphql.NewObject(
 6. ทดสอบ insert ข้อมูลจากการส่ง GraphQL Query.
 
 **Query**
+
 ```graphql
 mutation CreateContact($input: CreateContactInput) {
   contactMutations {
@@ -151,6 +152,7 @@ mutation CreateContact($input: CreateContactInput) {
 }
 ```
 **Variables**
+
 ```graphql
 {
   "input": {
@@ -613,6 +615,7 @@ mutation {
 ## Lab5.5 - Multiple insert data with exist mutation.
 **Objective:** เข้าใจการเขียน GraphQuery Mutation เพื่อ insert ข้อมูลหลายๆรายการจาก  Mutation ที่มีอยู่แล้ว
 **ไฟล์ทีี่เกี่ยวข้องใน Lab นี้**
+
 ใช้ไฟล์กลุ่มเดิมจากตัวอย่าง insert
 
 **Query**
@@ -657,10 +660,10 @@ mutation CreateContact($input: CreateContactInput, $input2: CreateContactInput) 
 }
 ```
 
-
 ## Lab5.6 - Multiple insert data with best performance for database.
 **Objective:** เข้าใจการเขียน GraphQuery Mutation เพื่อ insert ข้อมูลหลายๆรายการ ด้วยการเพิ่ม Mutation ให้รอบรับสำหรับการเพิ่มข้อมูลปริมาณมากที่เหมาะกับการทำงานแบบ Batch ของฐานข้อมูล
 **ไฟล์ทีี่เกี่ยวข้องใน Lab นี้**
+
 ใช้ไฟล์กลุ่มเดิมจากตัวอย่าง insert เพิ่มฟังก์ชั่นในส่วนต่างๆ
 
 1. เพิ่มฟังก์ชั่น *InsertContacts* ในไฟล์ *internal/contact/contact.repo.go* ดังนี้
