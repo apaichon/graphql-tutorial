@@ -1,6 +1,6 @@
 # Module 3: Define Schema
 
-## Lab 2: Generate Schema
+## Lab 3: Generate Schema
 1. Create schema.graphql at root project.
 ```gql
 # Define custom scalar types if needed
