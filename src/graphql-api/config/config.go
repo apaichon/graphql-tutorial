@@ -5,6 +5,7 @@ import (
     "os"
     "strconv"
     "sync"
+    "path/filepath"
 
     "github.com/joho/godotenv"
 )
@@ -27,8 +28,17 @@ var once sync.Once
 // LoadConfig loads the configuration from environment variables
 func NewConfig() *Config {
     once.Do(func() {
+        relativePath := "../../config/.env"
+
+		// Get the absolute path
+		absolutePath, err := filepath.Abs(relativePath)
+        if err != nil {
+            fmt.Println(err)
+            return
+        }
+        
         // Load environment variables from .env file
-        if err := godotenv.Load(); err != nil {
+        if err := godotenv.Load(absolutePath); err != nil {
             fmt.Println("Failed to load env variables:", err)
             return
         }
