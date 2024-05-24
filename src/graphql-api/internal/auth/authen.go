@@ -11,12 +11,21 @@ import (
 	"graphql-api/pkg/data/models"
 
 	"github.com/dgrijalva/jwt-go"
-
 )
 
+func cors(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+	}
+}
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
+
+	cors(w, r)
 	var user models.UserModel
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {

@@ -2,13 +2,19 @@ package resolvers
 
 import (
 	"fmt"
-	"graphql-api/internal/contact"
-	"graphql-api/pkg/data/models"
-	"time"
 	"graphql-api/internal/cache"
+	"graphql-api/internal/contact"
+
+	"graphql-api/internal/subscription"
+	"graphql-api/pkg/data/models"
+
+	// gql "graphql-api/pkg/graphql"
+	"strconv"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/graphql-go/graphql"
+	"github.com/samborkent/uuidv7"
 )
 
 var validate *validator.Validate
@@ -27,7 +33,7 @@ func validateContact(contactInput map[string]interface{}) map[string]interface{}
 	return errs
 }
 
-func CretateContactResolve(params graphql.ResolveParams) (interface{}, error) {
+func CreateContactResolve(params graphql.ResolveParams) (interface{}, error) {
 	// Map input fields to Contact struct
 	input := params.Args["input"].(map[string]interface{})
 	invalids := validateContact(input)
@@ -58,8 +64,14 @@ func CretateContactResolve(params graphql.ResolveParams) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	contactInput.ContactId = int64(id)
+
+	contactInput.ContactId = id
 	go cache.RemoveGetCacheResolver("ContactQueries")
+	contactId := strconv.Itoa(int(id))
+	uuid := uuidv7.New().String()
+
+	//gql.SendMessage(gql.SubscribeMessage{Id: uuid, Content: "Create Contact Id:" + contactId})
+	go subscription.SendMessage(subscription.SubscribeMessage{Id: uuid, Content: "Create Contact Id:" + contactId, Timestamp: time.Now()})
 	return contactInput, nil
 }
 
@@ -110,6 +122,11 @@ func CreateContactsResolve(params graphql.ResolveParams) (interface{}, error) {
 }
 
 func GetContactResolve(params graphql.ResolveParams) (interface{}, error) {
+	// Get the query from the context
+	query, _ := params.Context.Value("GraphQLQuery").(string)
+
+	fmt.Printf("GraphQL Query: %s", query)
+
 	// Update limit and offset if provided
 	limit, ok := params.Args["limit"].(int)
 	if !ok {
@@ -135,7 +152,7 @@ func GetContactResolve(params graphql.ResolveParams) (interface{}, error) {
 	// time.Sleep(1 * time.Minute)
 
 	go cache.SetCacheResolver(params, contacts)
-	
+
 	return contacts, nil
 }
 
@@ -167,7 +184,7 @@ func GetContactsPaginationResolve(params graphql.ResolveParams) (interface{}, er
 	if err != nil {
 		return nil, err
 	}
-
+	// time.Sleep(1 * time.Minute)
 	go cache.SetCacheResolver(params, contacts)
 
 	return contactPagination, nil
@@ -182,6 +199,7 @@ func GetContactByIdResolve(params graphql.ResolveParams) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	// time.Sleep(1 * time.Minute)
 	go cache.SetCacheResolver(params, contact)
 	return contact, nil
 }

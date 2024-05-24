@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bidding System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <div class="container mx-auto p-4">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Biding</h1>
+            <p id="userInfo"></p>
+            <div class="text-center">
+                <h2 class="text-lg font-semibold">Count Down</h2>
+                <div id="countdown" class="text-2xl font-bold">00:00</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6">
+            <div class="col-span-1">
+                <h2 class="text-2xl font-bold mb-4">Top 5</h2>
+                <ul id="topBids" class="space-y-4">
+                    <!-- Top bids will be dynamically inserted here -->
+                </ul>
+            </div>
+
+            <div class="col-span-2">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h2 id="productName" class="text-xl font-bold"></h2>
+                    <p id="floorPrice" class="text-gray-700"></p>
+                    <img id="productImage" alt="LaFerrari" class="mt-4 mb-4 w-full rounded-lg">
+                    <div class="flex items-center space-x-4">
+
+                        <input type="number" id="bidAmount" placeholder="BIDING PRICE"
+                            class="w-full p-2 border rounded-lg" min="20000000">
+                        <button onclick="addBid()" class="bg-black text-white px-4 py-2 rounded-lg">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="messages"></div>
+
+    <script>
+        const bids = [];
+        const TOP5_QUERY = 
+        `{
+        biding {
+            top5:getTop5Biding(id:1) {
+                bidId:bid_id
+                roomId:room_id
+                bidder
+                bidPrice:bid_price
+                bidTime:bid_time
+            }
+        }
+        }`
+
+        const CREATE_BID_MUTATION = 
+        `mutation CreateBiding($input: CreateBidingInput) {
+            bidingMutations {
+                createBiding(input: $input) {
+                bid_id
+                room_id
+                bidder
+                bid_time
+                bid_price
+                }
+            }
+        }`
+
+        async function addBid() {
+            const amount = parseFloat(document.getElementById('bidAmount').value);
+            const bidder = getDataFromSessionStorage("bidder")
+            const room = getDataFromLocalStorage("bidingRoom")
+            const biding = { room_id: room.room_id, bidder: bidder.user, bid_price: amount, bid_time: new Date() }
+
+            //console.log(biding)
+            if (!isNaN(amount)) {
+                // Insert to database
+                const result = await createBid(biding)
+                // get top5
+                const data = await fetchData(TOP5_QUERY)
+                bidingTopBids(data.biding.top5)
+            }
+        }
+
+        async function createBid(biding) {
+            try {
+                // Replace this URL with your GraphQL API endpoint
+                const token = getCookie('token')
+
+                const response = await fetch('http://localhost:4000/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({ query: CREATE_BID_MUTATION, variables: { input: biding } }),
+                });
+
+                const { data } = await response.json();
+                return data
+                // ...
+            } catch (error) {
+                console.error('Error create data:', error);
+            }
+        }
+
+        // Function to bind the JSON data to the HTML elements
+        function bindData(data) {
+            console.log('data', data)
+            const productNameElement = document.getElementById('productName');
+            const floorPriceElement = document.getElementById('floorPrice');
+            const productImageElement = document.getElementById('productImage');
+            //const data = data.getRoomById
+
+            productNameElement.textContent = `Product: ${data.productName}`;
+            floorPriceElement.textContent = `Floor Price: ${data.floorPrice.toLocaleString()}`;
+            productImageElement.src = data.productImage;
+        }
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+
+        function bidingTopBids(data) {
+            const topBids = document.getElementById('topBids');
+            topBids.innerHTML = '';
+
+            for (let i = 0; i < 5 && i < data.length; i++) {
+                const bid = data[i];
+                const li = document.createElement('li');
+                li.className = `flex items-center space-x-3 p-2 rounded-lg ${getColorClass(i)}`;
+                li.innerHTML = `
+                    <div class="text-lg font-bold">${i + 1}</div>
+                    <div class="flex-1 h-4 rounded-full bg-gray-200">
+                       
+                        <div class="h-full rounded-full" style="width: ${100 - i * 20}%;font-size:12px;color:black;text-align: center;">${formatDate(new Date(bid.bidTime))}</div>
+                       
+                    </div>
+                    <div class="text-lg font-semibold">${bid.bidPrice.toLocaleString()}</div>
+                    <div class="text-lg font-semibold"> ${bid.bidder}</div>
+                `;
+                topBids.appendChild(li);
+            }
+        }
+
+        function updateTopBids() {
+            const topBids = document.getElementById('topBids');
+            topBids.innerHTML = '';
+
+            for (let i = 0; i < 5 && i < bids.length; i++) {
+                const bid = bids[i];
+                const li = document.createElement('li');
+                li.className = `flex items-center space-x-3 p-2 rounded-lg ${getColorClass(i)}`;
+                li.innerHTML = `
+                    <div class="text-lg font-bold">${i + 1}</div>
+                    <div class="flex-1 h-4 rounded-full bg-gray-200">
+                        <div class="h-full rounded-full" style="width: ${100 - i * 20}%"></div>
+                    </div>
+                    <div class="text-lg font-semibold">${bid.toLocaleString()}</div>
+                `;
+                topBids.appendChild(li);
+            }
+        }
+
+        function getColorClass(index) {
+            switch (index) {
+                case 0: return 'bg-pink-500 text-white';
+                case 1: return 'bg-yellow-400 text-white';
+                case 2: return 'bg-blue-500 text-white';
+                case 3: return 'bg-teal-400 text-white';
+                default: return 'bg-gray-200 text-gray-800';
+            }
+        }
+
+        function setDataToSessionStorage(key, data) {
+            sessionStorage.setItem(key, JSON.stringify(data));
+        }
+
+        function removeDataFromSessionStorage(key) {
+            sessionStorage.removeItem(key);
+        }
+
+        function getDataFromSessionStorage(key) {
+            const data = sessionStorage.getItem(key);
+            return data ? JSON.parse(data) : null;
+        }
+
+        // List of random names
+        const firstNames = ['John', 'Emily', 'Michael', 'Sophia', 'David', 'Olivia', 'Daniel', 'Ava', 'Matthew', 'Emma'];
+        const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor'];
+
+        // Function to generate a random user
+        function generateRandomUser() {
+            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            const age = Math.floor(Math.random() * 61) + 20; // Random age between 20 and 80
+            const userInfo = `${firstName} ${lastName}, ${age} years old`;
+            return userInfo;
+        }
+
+        // Get the user info element
+        const userInfoElement = document.getElementById('userInfo');
+        // Define the GraphQL query
+        const GET_BIDDING_ROOM_QUERY = 
+        `{
+            biding {
+                getRoomById(id:1) {
+                    room_id
+                    start_date
+                    end_date
+                    productName:product_name
+                    floorPrice:floor_price
+                    productImage:product_image
+                }
+            top5:getTop5Biding(id:1) {
+                    bidId:bid_id
+                    roomId:room_id
+                    bidder
+                    bidPrice:bid_price
+                    bidTime:bid_time
+                }
+
+            }
+        }`;
+
+        async function fetchData(query) {
+            try {
+                // Replace this URL with your GraphQL API endpoint
+                const token = getCookie('token')
+                const response = await fetch('http://localhost:4000/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({ query: query }),
+                });
+
+                const { data } = await response.json();
+                return data
+                // ...
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        async function login() {
+            try {
+                // Replace this URL with your GraphQL API endpoint
+                const response = await fetch('http://127.0.0.1:4000/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        "user_name": "puppy",
+                        "password": "P@ssw0rd"
+                    }),
+                });
+
+                const { token } = await response.json();
+                setCookie('token', token, 1)
+                return token
+                // ...
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function setDataToLocalStorage(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        function getDataFromLocalStorage(key) {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : null;
+        }
+
+        function calculateRemainingTime() {
+            const now = new Date().getTime();
+            const bidingRoom = getDataFromLocalStorage('bidingRoom')
+            const endDate = new Date(bidingRoom.end_date)
+            const distance = endDate.getTime() - now;
+
+            // Calculate days, hours, minutes, and seconds remaining
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Display the countdown clock
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            // Check if the countdown has reached the start date
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                countdownElement.innerHTML = 'Countdown has started!';
+            }
+        }
+
+
+        // Generate a random user when the page loads
+        window.onload = async function () {
+            const randomUser = generateRandomUser();
+            userInfoElement.textContent = randomUser;
+            const token = await login()
+            const biddingRoom = await fetchData(GET_BIDDING_ROOM_QUERY)
+
+            bindData(biddingRoom.biding.getRoomById)
+            console.log(biddingRoom.biding.top5)
+            const users = randomUser.split(',')
+            setDataToSessionStorage('bidder', { user: users[0], age: users[1] })
+            setDataToLocalStorage('bidingRoom', biddingRoom.biding.getRoomById)
+            const data = await fetchData(TOP5_QUERY)
+            console.log('top5', data)
+            // bidingTopBids
+            bidingTopBids(data.biding.top5)
+
+        }
+
+        // Update the countdown clock every second
+        const countdownInterval = setInterval(calculateRemainingTime, 1000);
+        // Calculate the initial remaining time
+        calculateRemainingTime();
+
+        /*
+        Web Socket Subscribe
+        */
+
+        const ws = new WebSocket('ws://localhost:4000/ws-subscribe');
+
+        ws.onopen = () => {
+            const query = 
+            `subscription {
+                contactSubscriptions {
+                    contactCreated{
+                        id
+                        content
+                        timestamp
+                    }
+                }
+            }`;
+            ws.send(JSON.stringify({ query }));
+        };
+
+        ws.onmessage = (event) => {
+            readFromServer(event.data)
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
+
+        async function readFromServer(text) {
+            const correctedString = text.replace(/\\\"/g, '\"');
+            let data = JSON.parse(correctedString);
+            const { id, content, timestamp } = data
+
+            const messagesDiv = document.getElementById('messages');
+            const newMessage = document.createElement('div');
+
+            newMessage.textContent = `ID: ${id}, Text: ${content}, CreatedAt: ${new Date(timestamp).toLocaleString()}`
+            messagesDiv.appendChild(newMessage);
+            const bidingData = await fetchData(TOP5_QUERY)
+
+            // bidingTopBids
+            bidingTopBids(bidingData.biding.top5)
+        }
+    </script>
+
+</body>
+
+</html>

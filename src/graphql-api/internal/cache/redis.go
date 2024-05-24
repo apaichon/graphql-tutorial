@@ -26,6 +26,7 @@ func NewRedisClient() (*RedisClient, error) {
 	addr:= viper.GetString("CACHE_CON_STR")
 	password:= viper.GetString("CACHE_PASSWORD")
 	db:= viper.GetInt("CACHE_INDEX")
+	fmt.Printf("Address:%s Index:%v",addr,db )
 	
 	// Create a new Redis client
 	client := redis.NewClient(&redis.Options{

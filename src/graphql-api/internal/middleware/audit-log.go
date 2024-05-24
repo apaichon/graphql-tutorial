@@ -2,23 +2,24 @@ package middleware
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"strings"
-	"time"
-	"github.com/graphql-go/graphql/language/ast"
-	"github.com/mssola/user_agent"
-	"github.com/samborkent/uuidv7"
 	"graphql-api/config"
 	"graphql-api/internal/auth"
 	"graphql-api/internal/logger"
 	"graphql-api/pkg/data/models"
 	"graphql-api/pkg/graphql"
 	"graphql-api/pkg/graphql/utils"
-	
+	"io"
+	"log"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/graphql-go/graphql/language/ast"
+	"github.com/mssola/user_agent"
+	"github.com/samborkent/uuidv7"
 )
 
 // AuditLog represents an entry in the audit log.
@@ -56,7 +57,7 @@ func (crw *CustomResponseWriter) WriteHeader(statusCode int) {
 func AuditLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		crw := &CustomResponseWriter{
 			ResponseWriter: w,
 			Body:           new(bytes.Buffer),
@@ -73,6 +74,8 @@ func AuditLogMiddleware(next http.Handler) http.Handler {
 				http.Error(w, "Invalid GraphQL request", http.StatusBadRequest)
 				return
 			}
+			ctx := context.WithValue(r.Context(), "GraphQLQuery", gqlRequest.Query)
+			r = r.WithContext(ctx)
 		}
 
 		// Call the next handler

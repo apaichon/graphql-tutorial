@@ -3,18 +3,16 @@ package cache
 import (
 	"encoding/json"
 	"fmt"
+
 	// "graphql-api/internal/auth"
-	"strings"
 	"log"
+	"strings"
+
 	"github.com/graphql-go/graphql"
 	"github.com/spf13/viper"
 )
 
 var cacheDB *Cache
-
-func init() {
-	cacheDB = NewCache(IntToCacheBackend(viper.GetInt("CACHE_PROVIDER")))
-}
 
 // Middleware to enforce authorization based on permission
 func GetCacheResolver(next func(p graphql.ResolveParams) (interface{}, error)) func(p graphql.ResolveParams) (interface{}, error) {
@@ -23,6 +21,7 @@ func GetCacheResolver(next func(p graphql.ResolveParams) (interface{}, error)) f
 		args := concatMapToString(p.Args)
 		hashKey := p.Info.ParentType.Name() + "." + p.Info.FieldName + "_" + args // auth.HashString(args)
 		log.Printf("\nRead cached Key:[%s] to get data\n", hashKey)
+		cacheDB = NewCache(IntToCacheBackend(viper.GetInt("CACHE_PROVIDER")))
 		// if exist cached
 		jsonData, err := cacheDB.Get(hashKey)
 		// fmt.Printf("Cache Data:%s | error:%v \n", jsonData, err)
@@ -52,6 +51,7 @@ func SetCacheResolver(p graphql.ResolveParams, data interface{}) {
 	hashKey := p.Info.ParentType.Name() + "." + p.Info.FieldName + "_" + args // auth.HashString(args)
 	log.Printf("\nRead cached Key:[%s] to set data", hashKey)
 	jsonData, err := json.Marshal(data)
+	cacheDB = NewCache(IntToCacheBackend(viper.GetInt("CACHE_PROVIDER")))
 	if err == nil {
 		cacheDB.Set(hashKey, string(jsonData))
 		log.Printf("\nSet Data to cached [%s]", hashKey)
@@ -59,7 +59,8 @@ func SetCacheResolver(p graphql.ResolveParams, data interface{}) {
 }
 
 func RemoveGetCacheResolver(key string) {
-	cacheDB.Removes(key) 
+	cacheDB = NewCache(IntToCacheBackend(viper.GetInt("CACHE_PROVIDER")))
+	cacheDB.Removes(key)
 }
 
 func concatMapToString(m map[string]interface{}) string {

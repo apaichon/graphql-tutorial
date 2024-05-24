@@ -158,4 +158,11 @@ func AuthorizeResolverClean(resovleName string, next func(p graphql.ResolveParam
 	}
 }
 
+func GetUserName(p graphql.ResolveParams)(models.JwtClaims, error) {
+	tokenString, _ := p.Context.Value(userKey).(string)
+		config := config.NewConfig()
+		claim, err := DecodeJWTToken(tokenString, config.SecretKey)
+		return *claim, err
+}
+
 

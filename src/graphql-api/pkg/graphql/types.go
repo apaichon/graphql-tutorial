@@ -3,7 +3,7 @@ package graphql
 import (
 	"graphql-api/internal/auth"
 	"graphql-api/internal/cache"
-	"graphql-api/internal/monitoring"
+	"graphql-api/internal/subscription"
 	"graphql-api/pkg/data/models"
 	"graphql-api/pkg/graphql/resolvers"
 
@@ -51,9 +51,10 @@ var ContactQueriesType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "ContactQueries",
 	Fields: graphql.Fields{
 		"gets": &graphql.Field{
-			Type:    graphql.NewList(ContactGraphQLType),
-			Args:    SearhTextQueryArgument,
-			Resolve: auth.AuthorizeResolverClean("contacts.gets", monitoring.TraceResolver( cache.GetCacheResolver(resolvers.GetContactResolve))),
+			Type: graphql.NewList(ContactGraphQLType),
+			Args: SearhTextQueryArgument,
+			Resolve:// auth.AuthorizeResolverClean("contacts.gets", monitoring.TraceResolver( cache.GetCacheResolver(resolvers.GetContactResolve))),
+			resolvers.GetContactResolve,
 		},
 		"getPagination": &graphql.Field{
 			Type:    ContactPaginationGraphQLType,
@@ -92,7 +93,7 @@ var ContactMutationsType = graphql.NewObject(graphql.ObjectConfig{
 		"createContact": &graphql.Field{
 			Type:    ContactGraphQLType,
 			Args:    CreateContactArgument,
-			Resolve: auth.AuthorizeResolverClean("contactMutations.createContact", resolvers.CretateContactResolve),
+			Resolve: auth.AuthorizeResolverClean("contactMutations.createContact", resolvers.CreateContactResolve),
 		},
 		"createContacts": &graphql.Field{
 			Type:    StatusGraphQLType,
@@ -258,5 +259,119 @@ var PaginationGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 		"hasNext":     &graphql.Field{Type: graphql.Boolean},
 		"hasPrevious": &graphql.Field{Type: graphql.Boolean},
 		// Add field here
+	},
+})
+
+var SubscribeMessageGraphQLType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "SubscribeMessage",
+	Fields: graphql.Fields{
+		"id":        &graphql.Field{Type: graphql.String},
+		"content":   &graphql.Field{Type: graphql.String},
+		"timestamp": &graphql.Field{Type: graphql.DateTime},
+		// Add field here
+	},
+})
+
+// Define the ContactQueries type
+var ContactSubscriptionsType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "ContactSubscriptions",
+	Fields: graphql.Fields{
+		"contactCreated": &graphql.Field{
+			Type:    SubscribeMessageGraphQLType,
+			Resolve: subscription.MessageSubscribe,
+		},
+	},
+})
+
+type ContactSubscription struct {
+	ContactCreated func(map[string]interface{}) (*models.ContactModel, error) `json:"contactCreated"`
+}
+
+var BidingRoomGraphQLType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "BidingRoom",
+		Fields: graphql.Fields{
+			"room_id": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"start_date": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"end_date": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"product_name": &graphql.Field{
+				Type: graphql.String,
+			},
+			"floor_price": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"product_image": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var BidingGraphQLType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Biding",
+		Fields: graphql.Fields{
+			"bid_id": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"room_id": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"bidder": &graphql.Field{
+				Type: graphql.String,
+			},
+			"bid_price": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"bid_time": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+		},
+	},
+)
+
+type BidingQueries struct {
+	GetRoomById   func(int) (*models.BidingRoomModel, error) `json:"getRoomById"`
+	GetTop5Biding func(int) ([]*models.BidingModel, error)   `json:"getTop5Biding"`
+}
+
+// Define the TicketQueries type
+var BidingQueriesType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "BidingQueries",
+	Fields: graphql.Fields{
+		"getRoomById": &graphql.Field{
+			Type:    BidingRoomGraphQLType,
+			Args:    IdArgument,
+			Resolve: resolvers.GetBidingRoomByIdResolve,
+		},
+		"getTop5Biding": &graphql.Field{
+			Type:    graphql.NewList(BidingGraphQLType),
+			Args:    IdArgument,
+			Resolve: resolvers.GetBidingTop5Resolve,
+		},
+	},
+})
+
+type BidingMutations struct {
+	CreateBiding  func(map[string]interface{}) (*models.BidingModel, error)   `json:"createBiding"`
+}
+
+
+// Define the ContactMutations type
+var BidingMutationsType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "BidingMutations",
+	Fields: graphql.Fields{
+		"createBiding": &graphql.Field{
+			Type:    BidingGraphQLType,
+			Args:    CreateBidingArgument,
+			Resolve:  resolvers.CreateBidingResolve,
+		},
+
 	},
 })
