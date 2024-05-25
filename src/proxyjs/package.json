@@ -1,0 +1,19 @@
+{
+  "name": "proxyjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "express": "^4.19.2",
+    "graphql-tools": "^9.0.1",
+    "graphql-yoga": "^5.3.1",
+    "http-proxy-middleware": "^3.0.0",
+    "node-fetch": "^3.3.2"
+  }
+}
