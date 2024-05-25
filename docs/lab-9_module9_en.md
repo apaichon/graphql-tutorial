@@ -1,7 +1,7 @@
 # Module 9: Subscription and Real-Time Updates
 ## Lab9.1 - Web Integration
-**Objective:** สามารถประยุกต์ใช้ Graphql เชื่อมต่อกับ Frontend
-**ไฟล์ทีี่เกี่ยวข้องใน Lab นี้**
+**Objective:** Can use Graphql to connect to Frontend.
+**Related files in this lab**
 ```plantuml
 @startmindmap
 * data
@@ -36,8 +36,8 @@
 @endmindmap
 
 ```
-**ขั้นตอน**
-1. เตรียมข้อมูลตาราง biding_room สำหรับเก็บข้อมูลห้อง Biding และตาราง bidding สำหรับเก็บข้อมูลการ biding
+**step**
+1. Prepare biding_room table data for storing bidding room data and bidding table for storing biding data.
 ```sql
 CREATE TABLE biding_room (
     room_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,14 +57,14 @@ CREATE TABLE biding (
     FOREIGN KEY (room_id) REFERENCES biding_roomRoom (room_id)
 );
 ```
-2. เพิ่มตัวอย่างข้อมูลห้องสำหรับ Biding 
+2. Add sample room information for Bidding
 ```sql
 INSERT INTO biding_room (start_date, end_date, product_name, floor_price, product_image)
 VALUES ('2024-05-23', '2024-06-20', 'LaFerrari 2013', 20000000.00, 'static/images/ferrari-laferrari-2013-chassis.png');
 
 ```
 
-3. สร้าง struct ใน golang ไว้ mapping ข่้อมูล biding room และ biding ที่ไฟล์ pkg/data/models/bidding-room.model.go และ biding.model.go ตามลำดับ
+3. Create a struct in Golang for mapping the biding room and biding data in the files pkg/data/models/bidding-room.model.go and biding.model.go respectively.
 
  ```go
 // bidin-room.model.go
@@ -101,7 +101,7 @@ type BidingModel struct {
 
  ```
 
- 4. สร้าง Repository ใน Go สำหรับ Query ข้อมูลจาก ตาราง bidding_room และ bidding ที่ไฟล์ internal/biding/biding-room.repo.go และ biding.repo.go  ป้อนโค้ด ดังนี้
+ 4. Create a repository in Go for querying data from the bidding_room and bidding tables in the files internal/biding/biding-room.repo.go and biding.repo.go. Enter the code as follows.
 
  ```go
  // biding-room.repo.go
@@ -220,7 +220,7 @@ func (bd *BidingRepo) InsertBiding(biding *models.BidingModel) (int64, error) {
 }
 
 ```
-5. เพิ่ม Agruments สำหรับสร้าง Biding ที่ไฟล์ pkg/graphql/agruments.go
+5. Add Agruments for creating bids at the file pkg/graphql/agruments.go.
 
 ```go
 var CreateBidingInput = graphql.NewInputObject(graphql.InputObjectConfig{
@@ -240,7 +240,7 @@ var CreateBidingArgument = graphql.FieldConfigArgument{
 }
 
 ```
-6. เขียน Graphql Resolver สำหรับ ดึงข้อมูล Biding room, insert biding และ  ดึงข้อมูล top 5 biding ที่ไฟล์ pkg/grapql/resolvers/biding.resolver.go
+6. Write Graphql Resolver for retrieving Biding room data, insert biding and retrieving top 5 biding data at the file pkg/grapql/resolvers/biding.resolver.go
 
 ```go
 package resolvers
@@ -309,7 +309,7 @@ func CreateBidingResolve(params graphql.ResolveParams) (interface{}, error) {
 
 
 ```
-7. Mapping data model กับ graphql types ที่ไฟล์ pkg/graphql/types.go
+7. Mapping data model with graphql types ที่ไฟล์ pkg/graphql/types.go
 
 ```go
 
@@ -430,7 +430,7 @@ var RootMutation = graphql.NewObject(
 				},
 			},
 ```
-9. ทดสอบดึงข้อมูล Bidding room, Insert Bidding และ Get Top 5 Bidding จาก Graphql
+9. Test pulling Bidding room, Insert Bidding and Get Top 5 Bidding data from Graphql.
 *Get Biding Room*
 ```graphql
 
@@ -470,9 +470,9 @@ mutation CreateBiding($input: CreateBidingInput) {
   }
 }
 ```
-10. สร้างโฟลเดอร์ใหม่ระดับเดียวกันกับ graphql-api ชื่อ client-web
-11. สร้างโฟลเดอร์ static/images ทำการเพิ่มรูปสินค้าที่ต้องการแล้วทำการแก้ product_image ที่ตาราง biding_room
-12. สร้างไฟล์ biding.html ปัอนโค้ด ดังนี้
+10. Create a new folder at the same level as graphql-api named client-web.
+11. Create folder static/images Add images of the desired products and edit them. product_image at biding_room table
+12. Create a biding.html file and insert the code as follows.
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -857,7 +857,7 @@ mutation CreateBiding($input: CreateBidingInput) {
 
 </html>
 ```
-12. สร้างไฟล์  main.go ป้อนโค้ด ดังนี้
+12. Create main.go file, enter code as follows.
 ```go
 package main
 
@@ -884,13 +884,13 @@ func main() {
 }
 
 ```
-13. รัน go run main.go
-14. ทดสอบรัน web โดยเปิด Browser แล้วเข้าไปที่ localhost:8000 แล้่วลองทดสอบส่งข้อมูล Biding
+13. Run go run main.go
+14. Test running the web by opening a browser and going to localhost:8000 Then try sending the biding information.
  
 
  ## Lab9.2 - Implementing real-time data update with web socket
-**Objective:** สามารถประยุกต์ใช้ Websocket เพื่อ update ข้อมูลแบบ Real-time
-**ไฟล์ทีี่เกี่ยวข้องใน Lab นี้**
+**Objective:** Websocket can be applied to update data in Real-time.
+**Related files in this lab**
 ```plantuml
 @startmindmap
 * data
@@ -926,8 +926,8 @@ func main() {
 @endmindmap
 
 ```
-**ขั้นตอน**
-1. เพื่มฟังก์ชั่นสำหรับ WebSockets ที่ internal/subscription/websocket.go เพิ่มโค้ด ดังนี้
+**Step**
+1. Add functionality for WebSockets at internal/subscription/websocket.go add code as follows.
 ```go
 package subscription
 
@@ -985,7 +985,7 @@ func SubscribeWsHandler(schema graphql.Schema) http.HandlerFunc {
 	}
 }
 ```
-2. ที่ไฟล์ cmd/server/main.go เพิ่ม WebSockets Route เพื่อให้มีช่องทางเชื่อมต่อสำหรับ client
+2. In the cmd/server/main.go file, add a WebSockets Route to provide a connection channel for clients.
 ```go
 import(
  ...
@@ -1000,7 +1000,7 @@ func main() {
 
 ```
 
-3. ที่ web-client ไฟล์ biding.html เพื่มฟังก์ชั่นที่ฝั่ง Client เพื่อเชื่อมต่อ  Web Sockets ภายใน `<script>` เพื่ม
+3. At the web-client file biding.html add a function on the Client side to connect Web Sockets within `<script>` to add
 
 ```javascript
 /*
@@ -1037,4 +1037,4 @@ func main() {
 
 ```
 
-4. restart graphql, webclient เปืด browser หลายๆหน้าจอแล้วทดสอบส่งข้อมูล biding จะพบอัพเดตข้อมูลแบบ Real-time ทุกหน้าจอเมื่อมีการอัพเดตข้อมูล
+4. Restart graphql, webclient, open the browser on several screens and test sending biding information. You will find real-time information updates on every screen when information is updated.
