@@ -1,4 +1,4 @@
-package scalar
+package scalars
 
 import (
 	"strconv"
