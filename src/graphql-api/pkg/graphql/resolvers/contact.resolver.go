@@ -67,7 +67,7 @@ func CreateContactResolve(params graphql.ResolveParams) (interface{}, error) {
 
 	contactInput.ContactId = id
 	go cache.RemoveGetCacheResolver("ContactQueries")
-	contactId := strconv.Itoa(int(id))
+	contactId := strconv.FormatInt(id,10)
 	uuid := uuidv7.New().String()
 
 	//gql.SendMessage(gql.SubscribeMessage{Id: uuid, Content: "Create Contact Id:" + contactId})

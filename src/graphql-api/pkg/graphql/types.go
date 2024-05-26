@@ -1,11 +1,13 @@
 package graphql
 
 import (
+	// "strconv"
 	"graphql-api/internal/auth"
 	"graphql-api/internal/cache"
 	"graphql-api/internal/subscription"
 	"graphql-api/pkg/data/models"
 	"graphql-api/pkg/graphql/resolvers"
+	"graphql-api/pkg/graphql/scalar"
 
 	"github.com/graphql-go/graphql"
 )
@@ -16,7 +18,7 @@ Contact Types
 var ContactGraphQLType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Contact",
 	Fields: graphql.Fields{
-		"contact_id": &graphql.Field{Type: graphql.Int},
+		"contact_id": &graphql.Field{Type: scalar.Int64Type},
 		"name":       &graphql.Field{Type: graphql.String},
 		"first_name": &graphql.Field{Type: graphql.String},
 		"last_name":  &graphql.Field{Type: graphql.String},
@@ -375,3 +377,5 @@ var BidingMutationsType = graphql.NewObject(graphql.ObjectConfig{
 
 	},
 })
+
+
