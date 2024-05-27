@@ -67,6 +67,7 @@ func main() {
 		Pretty:     true,
 		GraphiQL:   false, // Disable GraphiQL for subscriptions endpoint
 		Playground: true,
+
 	})
 
 	// Serve GraphQL API at /graphql endpoint
@@ -78,12 +79,14 @@ func main() {
 	// Create the server
 	server := &http.Server{
 		Addr: fmt.Sprintf(":%v", cfg.GraphQLPort),
+		Handler: graphqlHandler,
 	}
 
 	go func() {
 		// Start the HTTP server
 		fmt.Printf("Server is running at http://localhost:%v/graphql\n", cfg.GraphQLPort)
 		server.ListenAndServe()
+
 	}()
 
 	// Listen for interrupt signal
@@ -115,7 +118,7 @@ func handlers(graphqlHandler *handler.Handler) http.Handler {
 	rateLimitBurst := viper.GetInt("RATE_LIMIT_BURST")
 	limit := rate.Every((time.Duration(rateLimitReqSec) * time.Second))
 	execTimeOut := viper.GetInt("EXEC_TIME_OUT")
-	auditLog := middleware.AuditLogMiddleware(graphqlHandler)
+	auditLog := middleware.ErrorHandlingMiddleware( middleware.AuditLogMiddleware(graphqlHandler))
 	rateLimit := middleware.RateLimitMiddleware(limit, rateLimitBurst)(auditLog)
 	circuitBreaker := middleware.CircuitBreakerMiddleware(time.Duration(execTimeOut) * time.Second)(rateLimit)
 	return middleware.CorsHandler(auth.AuthenticationHandler(circuitBreaker))

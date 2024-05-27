@@ -79,8 +79,27 @@ func AuditLogMiddleware(next http.Handler) http.Handler {
 		}
 
 		// Call the next handler
+
 		next.ServeHTTP(crw, r)
 		writeLog(r, crw, gqlRequest.Query, start)
+	})
+}
+
+// ErrorHandlingMiddleware catches and logs errors from HTTP handlers
+func ErrorHandlingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		crw := &CustomResponseWriter{
+			ResponseWriter: w,
+			Body:           new(bytes.Buffer),
+			StatusCode:     http.StatusOK, // Default to 200 OK
+		}
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("Caught panic: %v", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+		}()
+		next.ServeHTTP(crw, r)
 	})
 }
 
