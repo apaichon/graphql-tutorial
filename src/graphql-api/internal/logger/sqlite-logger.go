@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"graphql-api/pkg/data"
 	"graphql-api/pkg/data/models"
-	_ "github.com/mattn/go-sqlite3"
+	// _ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 // ContactRepo represents the repository for contact operations

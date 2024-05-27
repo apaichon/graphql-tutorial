@@ -5,7 +5,8 @@ import (
 	"graphql-api/pkg/data/models"
 	"math"
 
-	_ "github.com/mattn/go-sqlite3"
+	//_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 // Pagination struct for handling paginated results
@@ -34,15 +35,15 @@ func NewPagination(page, pageSize int, query string, parameters ...interface{}) 
 func (p *Pagination) GetPageData(db *DB) (*models.PaginationModel, error) {
 	// Get total count of items
 	totalCountQuery := fmt.Sprintf("SELECT COUNT(*) FROM (%s)", p.query)
-	
+
 	// fmt.Println( "parameters")
 	// fmt.Println( p.parameters...)
 	row, err := db.QueryRow(totalCountQuery, p.parameters...)
-	if  err != nil {
+	if err != nil {
 		return nil, err
 	}
-	pager:= &models.PaginationModel{}
-	row.Scan(&p.TotalItems);
+	pager := &models.PaginationModel{}
+	row.Scan(&p.TotalItems)
 	// fmt.Println("Total Items", p.TotalItems)
 	pager.TotalItems = p.TotalItems
 
@@ -62,11 +63,11 @@ func (p *Pagination) GetPageData(db *DB) (*models.PaginationModel, error) {
 	offset := (p.Page - 1) * p.PageSize
 	parameters := append(p.parameters, p.PageSize, offset)
 	rows, err := db.Query(paginatedQuery, parameters...)
-	
+
 	if err != nil {
 		return nil, err
 	}
-	
+
 	defer rows.Close()
 	*/
 

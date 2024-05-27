@@ -3,9 +3,9 @@ package cache
 import (
 	"context"
 	"fmt"
-	"time"
-	"sync"
 	"log"
+	"sync"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/spf13/viper"
@@ -15,6 +15,7 @@ var (
 	redisOnce     sync.Once
 	redisInstance *RedisClient
 )
+
 // RedisClient represents a simple Redis client.
 type RedisClient struct {
 	client *redis.Client
@@ -23,11 +24,11 @@ type RedisClient struct {
 // NewRedisClient creates a new Redis client.
 func NewRedisClient() (*RedisClient, error) {
 
-	addr:= viper.GetString("CACHE_CON_STR")
-	password:= viper.GetString("CACHE_PASSWORD")
-	db:= viper.GetInt("CACHE_INDEX")
-	fmt.Printf("Address:%s Index:%v",addr,db )
-	
+	addr := viper.GetString("CACHE_CON_STR")
+	password := viper.GetString("CACHE_PASSWORD")
+	db := viper.GetInt("CACHE_INDEX")
+	fmt.Printf("Address:%s Index:%v", addr, db)
+
 	// Create a new Redis client
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
@@ -47,12 +48,13 @@ func NewRedisClient() (*RedisClient, error) {
 }
 
 // GetInstance returns the singleton instance of the Redis client.
-func  GetRedisInstance() (*RedisClient, error) {
+func GetRedisInstance() (*RedisClient, error) {
 	redisOnce.Do(func() {
 		var err error
 		redisInstance, err = NewRedisClient()
 		if err != nil {
 			log.Fatalf("Error creating Redis client: %v", err)
+			// fmt.Printf("Error creating Redis client: %v", err)
 		}
 	})
 	return redisInstance, nil
@@ -78,8 +80,8 @@ func (rc *RedisClient) Get(key string) (string, error) {
 // Set sets the value associated with the given key in Redis.
 func (rc *RedisClient) Set(key, value string) error {
 	ctx := context.Background()
-	cacheAge:= viper.GetInt("CACHE_AGE")
-	err := rc.client.Set(ctx, key, value, time.Duration(cacheAge) *time.Second).Err()
+	cacheAge := viper.GetInt("CACHE_AGE")
+	err := rc.client.Set(ctx, key, value, time.Duration(cacheAge)*time.Second).Err()
 	if err != nil {
 		return fmt.Errorf("failed to set value for key '%s': %v", key, err)
 	}
@@ -102,8 +104,8 @@ func (rc *RedisClient) Remove(key string) error {
 // Remove removes the specified key from Redis.
 func (rc *RedisClient) Removes(key string) {
 	ctx := context.Background()
-	 // Use Lua script to delete keys by pattern
-	 script := `
+	// Use Lua script to delete keys by pattern
+	script := `
 	 local keys = redis.call('KEYS', ARGV[1])
 	 for i=1,#keys do
 		 redis.call('DEL', keys[i])
@@ -111,7 +113,7 @@ func (rc *RedisClient) Removes(key string) {
 	 return keys
  `
 	// Execute Lua script
-	result, err := rc.client.Eval(ctx, script, []string{}, key +"*").Result()
+	result, err := rc.client.Eval(ctx, script, []string{}, key+"*").Result()
 	if err != nil {
 		panic(err)
 	}
@@ -120,7 +122,7 @@ func (rc *RedisClient) Removes(key string) {
 	deletedKeys, _ := result.([]interface{})
 	log.Printf("deletedKeys%v", deletedKeys...)
 	for _, key := range deletedKeys {
-		// deleted, err := 
-		rc.client.Del(ctx, key.(string)) //.Result() 
+		// deleted, err :=
+		rc.client.Del(ctx, key.(string)) //.Result()
 	}
 }

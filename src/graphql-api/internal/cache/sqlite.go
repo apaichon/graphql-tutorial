@@ -6,7 +6,8 @@ import (
 	"log"
 	"sync"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
+	// _ "github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -99,6 +100,6 @@ func (sc *SQLiteInMemClient) Remove(key string) error {
 }
 
 // Remove removes the specified key from the SQLite database.
-func (sc *SQLiteInMemClient) Removes(key string)  {
+func (sc *SQLiteInMemClient) Removes(key string) {
 	sc.db.Exec("DELETE FROM cache WHERE key Like ?", "%"+key+"*%")
 }

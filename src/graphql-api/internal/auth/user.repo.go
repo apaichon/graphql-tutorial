@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"graphql-api/pkg/data"
 	"graphql-api/pkg/data/models"
-	_ "github.com/mattn/go-sqlite3"
+
+	//_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 // UserRepo represents the repository for user operations
@@ -98,6 +100,7 @@ func (cr *UserRepo) GetUserByName(name string) (*models.UserModel, error) {
 		&user.CreatedBy,
 	)
 
+	fmt.Printf("user:%v", user)
 	return &user, nil
 }
 

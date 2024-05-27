@@ -1,14 +1,13 @@
-package test
+package contact
 
 import (
-	"graphql-api/internal/contact"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetContacts(t *testing.T) {
-	repo := contact.NewContactRepo()
+	repo := NewContactRepo()
 	contacts, err := repo.GetContactsBySearchText("", 10, 0)
 
 	if err != nil {

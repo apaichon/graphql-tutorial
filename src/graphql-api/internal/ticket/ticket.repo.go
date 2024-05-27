@@ -2,10 +2,12 @@ package ticket
 
 import (
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
+	// _ "github.com/mattn/go-sqlite3"
 	"graphql-api/internal/event"
 	"graphql-api/pkg/data"
 	"graphql-api/pkg/data/models"
+
+	_ "modernc.org/sqlite"
 )
 
 // TicketRepo represents the repository for ticket operations
@@ -75,7 +77,6 @@ func (cr *TicketRepo) GetTicketEventsBySearchText(searchText string, limit, offs
 	}
 	defer rows.Close()
 
-	
 	for rows.Next() {
 		var ticket models.TicketModel
 		err := rows.Scan(
@@ -105,11 +106,11 @@ func (cr *TicketRepo) GetTicketEventsBySearchText(searchText string, limit, offs
 	}
 
 	// Create a map from Event slice by EventId
-	eventList:= models.CopyEventSlice(events)
-	events =nil 
+	eventList := models.CopyEventSlice(events)
+	events = nil
 	eventMap := models.CreateEventMap(eventList)
 	ticketEvents := models.MapTicketsWithEvents(tickets, eventMap)
-	eventMap =nil
+	eventMap = nil
 	return ticketEvents, nil
 }
 

@@ -2,11 +2,13 @@ package event
 
 import (
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
+	// _ "github.com/mattn/go-sqlite3"
 	"graphql-api/pkg/data"
 	"graphql-api/pkg/data/models"
 	"strconv"
 	"strings"
+
+	_ "modernc.org/sqlite"
 )
 
 // EventRepo represents the repository for event operations
@@ -99,8 +101,8 @@ func (cr *EventRepo) GetEventsByIDs(ids []int) ([]*models.EventModel, error) {
 	idList := fmt.Sprintf("(%s)", strings.Join(strArr, ","))
 
 	query := fmt.Sprintf(`SELECT * FROM event
-             Where event_id in %v`,idList)
-	
+             Where event_id in %v`, idList)
+
 	rows, err := cr.DB.Query(query)
 	if err != nil {
 		return nil, err
