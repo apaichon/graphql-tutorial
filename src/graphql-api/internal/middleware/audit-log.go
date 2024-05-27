@@ -79,7 +79,6 @@ func AuditLogMiddleware(next http.Handler) http.Handler {
 		}
 
 		// Call the next handler
-
 		next.ServeHTTP(crw, r)
 		writeLog(r, crw, gqlRequest.Query, start)
 	})
@@ -93,18 +92,16 @@ func ErrorHandlingMiddleware(next http.Handler) http.Handler {
 			Body:           new(bytes.Buffer),
 			StatusCode:     http.StatusOK, // Default to 200 OK
 		}
-		defer func() {
-			if err := recover(); err != nil {
-				log.Printf("Caught panic: %v", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			}
-		}()
 		next.ServeHTTP(crw, r)
 	})
 }
 
 func writeLog(r *http.Request, crw *CustomResponseWriter, query string, start time.Time) {
-	logEntry := prepareLog(r, crw, query, start)
+	logEntry, err := prepareLog(r, crw, query, start)
+	if err != nil {
+		log.Printf("Log Error:%v", err)
+		return
+	}
 
 	fmt.Printf("Audit Log: %+v\n", logEntry)
 	auditLog := logger.GetLogInitializer()
@@ -113,12 +110,15 @@ func writeLog(r *http.Request, crw *CustomResponseWriter, query string, start ti
 	go auditLog.WriteLogToFile(*logEntry)
 }
 
-func prepareLog(r *http.Request, crw *CustomResponseWriter, bodyString string, start time.Time) *models.LogModel {
+func prepareLog(r *http.Request, crw *CustomResponseWriter, bodyString string, start time.Time) (*models.LogModel, error) {
 
 	uaString := r.Header.Get("User-Agent")
 	token := r.Header.Get("Authorization")
 	ip := r.RemoteAddr
-	actions := transformGraphResolves(bodyString)
+	actions, err := transformGraphResolves(bodyString)
+	if err != nil {
+		return nil, err
+	}
 	// Parse the User-Agent
 	ua := user_agent.New(uaString)
 	// Get the browser name and version
@@ -131,7 +131,8 @@ func prepareLog(r *http.Request, crw *CustomResponseWriter, bodyString string, s
 	// Parse the GraphQL response
 	var gqlResponse graphql.GraphQLResponse
 	if err := json.NewDecoder(crw.Body).Decode(&gqlResponse); err != nil {
-		log.Fatalf("Error decoding JSON response: %v", err)
+		// "Error decoding JSON response: %v", err)
+		return nil, err
 	}
 	errors := utils.ErrorsToString(gqlResponse.Errors)
 
@@ -152,7 +153,7 @@ func prepareLog(r *http.Request, crw *CustomResponseWriter, bodyString string, s
 		Errors:               errors,
 	}
 
-	return logData
+	return logData, nil
 }
 
 func getUserIdFromJWT(token string) int {
@@ -166,11 +167,11 @@ func getUserIdFromJWT(token string) int {
 	return userId
 }
 
-func transformGraphResolves(query string) string {
+func transformGraphResolves(query string) (string, error) {
 	// Parse the GraphQL query into an AST
 	document, err := utils.ParseGraphQLQuery(query)
 	if err != nil {
-		log.Fatalf("Failed to parse GraphQL query: %v", err)
+		return "Failed to parse GraphQL query:", err
 	}
 
 	// List to store the dot notation for "resolve" fields
@@ -184,5 +185,5 @@ func transformGraphResolves(query string) string {
 	}
 
 	methods := strings.Join(resolveDotNotation[:], ",")
-	return methods
+	return methods, nil
 }
